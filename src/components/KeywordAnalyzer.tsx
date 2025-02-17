@@ -87,7 +87,7 @@ const KeywordAnalyzer: React.FC = () => {
     <div className="w-full max-w-4xl mx-auto p-4 space-y-4">
       <Card>
         <CardHeader>
-          <CardTitle>YouTube Metadata Optimizer</CardTitle>
+          <CardTitle>YouTube Metadata Optimizer v1</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
