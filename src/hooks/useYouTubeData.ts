@@ -1,5 +1,6 @@
-import { useState } from 'react';
-import { YouTubeDataFetcher, ProcessedData } from '../utils/YouTubeDataFetcher';
+import { useState } from "react";
+import { YouTubeDataFetcher, ProcessedData } from "../utils/YouTubeDataFetcher";
+import { useApiKeys } from "../App";
 
 type UseYouTubeDataReturn = {
   fetchData: (title: string, description: string) => Promise<ProcessedData>;
@@ -7,13 +8,17 @@ type UseYouTubeDataReturn = {
   error: Error | null;
 };
 
-export const useYouTubeData = (apiKey: string): UseYouTubeDataReturn => {
+export const useYouTubeData = (): UseYouTubeDataReturn => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const { youtubeApiKey } = useApiKeys();
 
-  const fetcher = new YouTubeDataFetcher(apiKey);
+  const fetcher = new YouTubeDataFetcher(youtubeApiKey);
 
-  const fetchData = async (title: string, description: string): Promise<ProcessedData> => {
+  const fetchData = async (
+    title: string,
+    description: string,
+  ): Promise<ProcessedData> => {
     setIsLoading(true);
     setError(null);
 
@@ -31,6 +36,6 @@ export const useYouTubeData = (apiKey: string): UseYouTubeDataReturn => {
   return {
     fetchData,
     isLoading,
-    error
+    error,
   };
 };
