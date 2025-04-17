@@ -317,7 +317,7 @@ export class GroqReportGenerator {
       prompt += `\n`;
     }
 
-    prompt += `Please generate a comprehensive report that includes:\n`;
+    prompt += `Please generate a comprehensive report that includes the following:\n`;
     prompt += `1. A professional introduction summarizing overall performance\n`;
     prompt += `2. Detailed analysis of the title's strengths and weaknesses\n`;
     prompt += `3. Detailed analysis of the description's strengths and weaknesses\n`;
