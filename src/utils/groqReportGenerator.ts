@@ -1,5 +1,6 @@
 import axios from "axios";
 
+// Define interfaces for analysis results, user input, report options, and generated report
 export interface AnalysisResult {
   scores: {
     title: number;
@@ -50,6 +51,7 @@ export interface GeneratedReport {
   error?: string;
 }
 
+// Main class for generating reports using the Groq API
 export class GroqReportGenerator {
   private apiKey: string;
   private model = "llama3-70b-8192";
@@ -59,9 +61,10 @@ export class GroqReportGenerator {
     this.apiKey = apiKey;
   }
 
+  // Generate a summary report
   async generateSummaryReport(
     analysis: AnalysisResult,
-    userInput: UserInput,
+    userInput: UserInput
   ): Promise<GeneratedReport> {
     try {
       if (!this.apiKey) {
@@ -80,7 +83,7 @@ export class GroqReportGenerator {
             {
               role: "system",
               content:
-                "You are a concise YouTube SEO consultant. Provide a single paragraph assessment that captures the essence of the content quality and offers clear improvement suggestions.",
+                "You are a concise YouTube SEO consultant. Provide a single paragraph assessment that captures the essence of the content quality and offers clear improvement suggestions. Use bullet points to highlight the key points.",
             },
             {
               role: "user",
@@ -95,9 +98,10 @@ export class GroqReportGenerator {
             Authorization: `Bearer ${this.apiKey}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
+      // Check for valid response
       if (
         !response.data ||
         !response.data.choices ||
@@ -113,9 +117,10 @@ export class GroqReportGenerator {
       console.error("Error generating summary report with Groq:", error);
       let errorMessage = "Unknown error occurred";
 
+      // Handle different types of errors
       if (axios.isAxiosError(error) && error.response) {
         errorMessage = `API Error (${error.response.status}): ${JSON.stringify(
-          error.response.data,
+          error.response.data
         )}`;
       } else if (error instanceof Error) {
         errorMessage = error.message;
@@ -128,6 +133,7 @@ export class GroqReportGenerator {
     }
   }
 
+  // Generate a detailed report
   async generateReport(
     analysis: AnalysisResult,
     userInput: UserInput,
@@ -135,7 +141,7 @@ export class GroqReportGenerator {
       includeDetailedScores: true,
       includeRecommendations: true,
       professionalTone: true,
-    },
+    }
   ): Promise<GeneratedReport> {
     try {
       if (!this.apiKey) {
@@ -169,9 +175,10 @@ export class GroqReportGenerator {
             Authorization: `Bearer ${this.apiKey}`,
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
+      // Check for valid response
       if (
         !response.data ||
         !response.data.choices ||
@@ -187,9 +194,10 @@ export class GroqReportGenerator {
       console.error("Error generating report with Groq:", error);
       let errorMessage = "Unknown error occurred";
 
+      // Handle different types of errors
       if (axios.isAxiosError(error) && error.response) {
         errorMessage = `API Error (${error.response.status}): ${JSON.stringify(
-          error.response.data,
+          error.response.data
         )}`;
       } else if (error instanceof Error) {
         errorMessage = error.message;
@@ -202,22 +210,23 @@ export class GroqReportGenerator {
     }
   }
 
+  // Build prompt for summary report
   private buildSummaryPrompt(
     analysis: AnalysisResult,
-    userInput: UserInput,
+    userInput: UserInput
   ): string {
     // Format the scores as percentages with 1 decimal place
     const formatScore = (score: number) => `${score.toFixed(1)}%`;
 
     let prompt = `Rewrite the video title and description to sound more engaging, professional, and SEO-friendly. Incorporate all the key improvements I've made in the video. Generate two compelling title suggestions and two matching descriptions that clearly communicate the value of the content. Feel free to add relevant hashtags for discoverability.:\n\n`;
 
+    // Add user input and overall scores
     prompt += `TITLE: "${userInput.title}"\n`;
     prompt += `DESCRIPTION: "${userInput.description}"\n\n`;
-
     prompt += `OVERALL SCORES:\n`;
     prompt += `- Title Score: ${formatScore(analysis.scores.title)}\n`;
     prompt += `- Description Score: ${formatScore(
-      analysis.scores.description,
+      analysis.scores.description
     )}\n`;
     prompt += `- Overall Score: ${formatScore(analysis.scores.overall)}\n\n`;
 
@@ -240,15 +249,16 @@ export class GroqReportGenerator {
     });
     prompt += `\n`;
 
-    prompt += `Please generate a single paragraph that captures the current quality of the content and clearly articulates what they can improve on. Keep it professional but concise.`;
+    prompt += `Please generate a single paragraph with bullet points that captures the current quality of the content and clearly articulates what they can improve on. Keep it professional but concise.`;
 
     return prompt;
   }
 
+  // Build prompt for detailed report
   private buildPrompt(
     analysis: AnalysisResult,
     userInput: UserInput,
-    options: ReportOptions,
+    options: ReportOptions
   ): string {
     const { includeDetailedScores, includeRecommendations, professionalTone } =
       options;
@@ -260,49 +270,51 @@ export class GroqReportGenerator {
       professionalTone ? "professional" : "friendly"
     } YouTube metadata optimization report based on the following analysis:\n\n`;
 
+    // Add user input and overall scores
     prompt += `TITLE: "${userInput.title}"\n`;
     prompt += `DESCRIPTION: "${userInput.description}"\n\n`;
-
     prompt += `OVERALL SCORES:\n`;
     prompt += `- Title Score: ${formatScore(analysis.scores.title)}\n`;
     prompt += `- Description Score: ${formatScore(
-      analysis.scores.description,
+      analysis.scores.description
     )}\n`;
     prompt += `- Overall Score: ${formatScore(analysis.scores.overall)}\n\n`;
 
+    // Include detailed scores if requested
     if (includeDetailedScores) {
       prompt += `TITLE FACTORS:\n`;
       prompt += `- Keyword Relevance: ${formatScore(
-        analysis.factors.title.keywordRelevance,
+        analysis.factors.title.keywordRelevance
       )}\n`;
       prompt += `- Keyword Placement: ${formatScore(
-        analysis.factors.title.keywordPlacement,
+        analysis.factors.title.keywordPlacement
       )}\n`;
       prompt += `- Length Score: ${formatScore(
-        analysis.factors.title.lengthScore,
+        analysis.factors.title.lengthScore
       )}\n`;
       prompt += `- Uniqueness Score: ${formatScore(
-        analysis.factors.title.uniquenessScore,
+        analysis.factors.title.uniquenessScore
       )}\n\n`;
 
       prompt += `DESCRIPTION FACTORS:\n`;
       prompt += `- Keyword Coverage: ${formatScore(
-        analysis.factors.description.keywordCoverage,
+        analysis.factors.description.keywordCoverage
       )}\n`;
       prompt += `- Keyword Placement: ${formatScore(
-        analysis.factors.description.keywordPlacement,
+        analysis.factors.description.keywordPlacement
       )}\n`;
       prompt += `- Length Score: ${formatScore(
-        analysis.factors.description.lengthScore,
+        analysis.factors.description.lengthScore
       )}\n`;
       prompt += `- CTA Score: ${formatScore(
-        analysis.factors.description.ctaScore,
+        analysis.factors.description.ctaScore
       )}\n`;
       prompt += `- Hashtag Score: ${formatScore(
-        analysis.factors.description.hashtagScore,
+        analysis.factors.description.hashtagScore
       )}\n\n`;
     }
 
+    // Include recommendations if requested
     if (includeRecommendations) {
       prompt += `TITLE RECOMMENDATIONS:\n`;
       analysis.recommendations.title.forEach((rec) => {
@@ -317,6 +329,7 @@ export class GroqReportGenerator {
       prompt += `\n`;
     }
 
+    // Add instructions for report structure
     prompt += `Please generate a comprehensive report that includes the following:\n`;
     prompt += `1. A professional introduction summarizing overall performance\n`;
     prompt += `2. Detailed analysis of the title's strengths and weaknesses\n`;
