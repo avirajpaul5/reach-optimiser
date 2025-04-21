@@ -1,4 +1,4 @@
-# YouTube Metadata Optimizer
+# REACH OPTIMIZER
 
 A tool to analyze and optimize YouTube video metadata (titles and descriptions) for better SEO and discoverability.
 
@@ -12,14 +12,47 @@ A tool to analyze and optimize YouTube video metadata (titles and descriptions) 
 - Session history tracking
 - Modern UI with flash card report display
 
-## Setup
+## Running the Project
 
-1. Clone the repository
-2. Install dependencies with `npm install`
-3. Configure environment variables (see below)
-4. Start the development server with `npm run dev`
+### Prerequisites
 
-## Environment Variables
+- Node.js (v16 or higher)
+- npm or yarn
+- YouTube Data API key
+- Groq API key
+- Supabase account
+
+### Setup and Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/yourusername/youtube-metadata-optimizer.git
+cd youtube-metadata-optimizer
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Configure environment variables:
+
+   - Copy `.env.example` to `.env` in the root directory
+   - Fill in the required API keys and credentials (see below)
+
+4. Start the development server:
+
+```bash
+npm run dev
+```
+
+5. Open your browser and navigate to `http://localhost:5173`
+
+### Environment Variables
 
 Create a `.env` file in the root directory with the following variables:
 
@@ -40,9 +73,21 @@ VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
 
 ## Supabase Setup
 
-1. Create a new project at [Supabase](https://supabase.com)
-2. Enable email/password authentication in Authentication > Providers
-3. Create a new table called `session_history` with the following schema:
+1. Create a new project:
+
+   - Go to [Supabase](https://supabase.com) and sign up/log in
+   - Click "New project" and follow the setup wizard
+   - Take note of your project URL and anon key (visible under Project Settings → API)
+
+2. Enable Authentication:
+
+   - Navigate to Authentication → Providers in your Supabase dashboard
+   - Enable Email/Password authentication (and any other providers you wish to use)
+   - Configure any additional settings like email templates if desired
+
+3. Set up the database:
+   - Go to the SQL Editor in your Supabase dashboard
+   - Create a new query and paste the following SQL:
 
 ```sql
 create table public.session_history (
@@ -71,78 +116,24 @@ create policy "Users can insert their own sessions"
   with check (auth.uid() = user_id);
 ```
 
-4. Copy your Supabase URL and anon key to your `.env` file
+4. Update your environment variables:
+   - Add your Supabase URL and anon key to your `.env` file:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url_here
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+   ```
 
-## Development
-
-Run the development server:
-
-```bash
-npm run dev
-```
-
-Visit `http://localhost:5173` to use the application.
-
-## Building for Production
+### Building for Production
 
 ```bash
 npm run build
 ```
 
-## Technology Stack
+The output will be in the `dist` directory, which can be deployed to any static hosting service.
 
-- **Frontend**: React with TypeScript
-- **Styling**: Tailwind CSS
-- **API Integration**:
-  - YouTube Data API v3 for competitive analysis
-  - Groq AI API with Llama 3.1 70B for intelligent report generation
+## Getting API Keys
 
-## Getting Started
-
-### Prerequisites
-
-- Node.js (v16 or higher)
-- npm or yarn
-- YouTube Data API key
-- Groq API key
-
-### Installation
-
-1. Clone the repository:
-
-```bash
-git clone https://github.com/yourusername/youtube-metadata-optimizer.git
-cd youtube-metadata-optimizer
-```
-
-2. Install dependencies:
-
-```bash
-npm install
-# or
-yarn install
-```
-
-3. Create a `.env` file in the root directory based on `.env.example`:
-
-```
-VITE_YOUTUBE_API_KEY=your_youtube_api_key_here
-VITE_GROQ_API_KEY=your_groq_api_key_here
-```
-
-4. Start the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-```
-
-5. Open your browser and navigate to `http://localhost:5173`
-
-### Getting API Keys
-
-#### YouTube API Key
+### YouTube API Key
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project
@@ -150,7 +141,7 @@ yarn dev
 4. Create credentials for an API key
 5. Copy the key to your `.env` file
 
-#### Groq API Key
+### Groq API Key
 
 1. Sign up for an account at [Groq](https://console.groq.com/)
 2. Navigate to the API keys section
@@ -165,21 +156,31 @@ yarn dev
 4. Generate a quick summary or detailed professional report using AI
 5. Implement the recommendations to improve your video's discoverability
 
+## Technology Stack
+
+- **Frontend**: React with TypeScript
+- **Styling**: Tailwind CSS
+- **Authentication & Database**: Supabase
+- **API Integration**:
+  - YouTube Data API v3 for competitive analysis
+  - Groq AI API with Llama 3.1 70B for intelligent report generation
+- **Build Tool**: Vite
+
 ## Project Structure
 
 ```
 youtube-metadata-optimizer/
-├── public/
-├── src/
-│   ├── components/         # React components
-│   ├── hooks/              # Custom React hooks
-│   ├── utils/              # Utility functions
-│   ├── App.tsx             # Main application component
-│   └── main.tsx            # Application entry point
-├── .env                    # Environment variables (not committed)
-├── .env.example            # Example environment variables
-├── package.json            # Project dependencies
-└── README.md               # Project documentation
+├── public/               # Static assets
+├── src/                  # Source files
+│   ├── components/       # React components
+│   ├── hooks/            # Custom React hooks
+│   ├── utils/            # Utility functions
+│   ├── App.tsx           # Main application component
+│   └── main.tsx          # Application entry point
+├── .env                  # Environment variables (not committed)
+├── .env.example          # Example environment variables
+├── package.json          # Project dependencies
+└── README.md             # Project documentation
 ```
 
 ## Optimization Factors
@@ -201,6 +202,12 @@ The application analyzes several factors to determine the quality of your metada
 - **CTA Score**: Inclusion of effective calls-to-action
 - **Hashtag Score**: Strategic use of hashtags for discoverability
 
+## Troubleshooting
+
+- **Authentication Issues**: Ensure your Supabase credentials are correct and that you've enabled the Email/Password provider
+- **API Errors**: Verify that your YouTube and Groq API keys are valid and have the necessary permissions
+- **Database Errors**: Check that you've created the `session_history` table with the correct schema and RLS policies
+
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
@@ -209,6 +216,7 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - [YouTube Data API](https://developers.google.com/youtube/v3)
 - [Groq AI](https://groq.com/)
+- [Supabase](https://supabase.com/)
 - [React](https://reactjs.org/)
 - [Tailwind CSS](https://tailwindcss.com/)
 - [Vite](https://vitejs.dev/)
