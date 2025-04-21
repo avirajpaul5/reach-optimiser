@@ -1,5 +1,7 @@
 import React, { createContext, useContext } from "react";
 import KeywordAnalyzer from "./components/KeywordAnalyzer";
+import { AuthProvider, useAuth } from "./components/AuthProvider";
+import AuthForm from "./components/AuthForm";
 
 interface ApiKeys {
   youtubeApiKey: string;
@@ -28,12 +30,28 @@ const ApiKeysProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
+const AppContent = () => {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center min-h-screen'>
+        <div className='animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600'></div>
+      </div>
+    );
+  }
+
+  return user ? <KeywordAnalyzer /> : <AuthForm />;
+};
+
 function App() {
   return (
-    <div className='min-h-screen bg-gray-100'>
-      <ApiKeysProvider>
-        <KeywordAnalyzer />
-      </ApiKeysProvider>
+    <div className='min-h-screen bg-gray-50'>
+      <AuthProvider>
+        <ApiKeysProvider>
+          <AppContent />
+        </ApiKeysProvider>
+      </AuthProvider>
     </div>
   );
 }

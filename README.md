@@ -1,15 +1,93 @@
 # YouTube Metadata Optimizer
 
-A powerful web application that helps content creators optimize their YouTube video metadata for better discoverability and engagement. The application analyzes your title and description, provides insights and scores, and offers AI-generated improvement reports.
+A tool to analyze and optimize YouTube video metadata (titles and descriptions) for better SEO and discoverability.
 
 ## Features
 
-- **Metadata Analysis**: Analyzes your video title and description for SEO optimization
-- **Performance Scoring**: Provides detailed scores on various aspects of your metadata
-- **AI-Generated Reports**:
-  - Quick Summary: Concise, single-paragraph assessment of content quality with key improvements
-  - Detailed Report: Comprehensive analysis with structured sections and professional recommendations
-- **YouTube Data Integration**: Compares your metadata against trending content in your niche
+- Analyze YouTube video titles and descriptions
+- Get detailed scoring on SEO factors
+- Generate AI-powered optimization recommendations
+- View both summary and detailed professional reports
+- User authentication with Supabase
+- Session history tracking
+- Modern UI with flash card report display
+
+## Setup
+
+1. Clone the repository
+2. Install dependencies with `npm install`
+3. Configure environment variables (see below)
+4. Start the development server with `npm run dev`
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+# YouTube API key - required for fetching related video metadata
+# Get one at: https://console.cloud.google.com/apis/dashboard
+VITE_YOUTUBE_API_KEY=your_youtube_api_key_here
+
+# Groq API key - required for AI-generated reports
+# Get one at: https://console.groq.com/keys
+VITE_GROQ_API_KEY=your_groq_api_key_here
+
+# Supabase credentials - required for authentication and storing user data
+# Get them at: https://supabase.com/dashboard
+VITE_SUPABASE_URL=your_supabase_url_here
+VITE_SUPABASE_ANON_KEY=your_supabase_anon_key_here
+```
+
+## Supabase Setup
+
+1. Create a new project at [Supabase](https://supabase.com)
+2. Enable email/password authentication in Authentication > Providers
+3. Create a new table called `session_history` with the following schema:
+
+```sql
+create table public.session_history (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  title text not null,
+  description text not null,
+  analysis_result jsonb not null,
+  report text,
+  created_at timestamp with time zone default now() not null
+);
+
+-- Set up RLS (Row Level Security)
+alter table public.session_history enable row level security;
+
+-- Create policy to allow users to read only their own sessions
+create policy "Users can view their own sessions"
+  on public.session_history
+  for select
+  using (auth.uid() = user_id);
+
+-- Create policy to allow users to insert their own sessions
+create policy "Users can insert their own sessions"
+  on public.session_history
+  for insert
+  with check (auth.uid() = user_id);
+```
+
+4. Copy your Supabase URL and anon key to your `.env` file
+
+## Development
+
+Run the development server:
+
+```bash
+npm run dev
+```
+
+Visit `http://localhost:5173` to use the application.
+
+## Building for Production
+
+```bash
+npm run build
+```
 
 ## Technology Stack
 

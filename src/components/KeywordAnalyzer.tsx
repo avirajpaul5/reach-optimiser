@@ -1,10 +1,5 @@
 import React, { useState } from "react";
-import {
-  Card,
-  CardHeader,
-  CardTitle,
-  CardContent,
-} from "../components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
 import {
   AlertCircle,
   Loader,
@@ -21,6 +16,15 @@ import { useYouTubeData } from "../hooks/useYouTubeData";
 import { useGroqReport } from "../hooks/useGroqReport";
 import ProfessionalReport from "./ProfessionalReport";
 import SummaryReport from "./SummaryReport";
+import SummaryReportCards from "./SummaryReportCards";
+import RecommendationCards from "./RecommendationCards";
+import AISummaryReportCard from "./AISummaryReportCard";
+import ProfessionalReportCard from "./ProfessionalReportCard";
+import ReportFlashCards from "./ReportFlashCards";
+import HistorySidebar from "./HistorySidebar";
+import { useAuth } from "./AuthProvider";
+import { saveSession, SessionHistory } from "../utils/supabase";
+import { Button } from "./ui/button";
 
 type UserInput = {
   title: string;
@@ -38,6 +42,11 @@ const KeywordAnalyzer: React.FC = () => {
   const [progress, setProgress] = useState(0);
   const [showProfessionalReport, setShowProfessionalReport] = useState(false);
   const [showSummaryReport, setShowSummaryReport] = useState(false);
+  const [showFlashCards, setShowFlashCards] = useState(false);
+  const [isSavingSession, setIsSavingSession] = useState(false);
+  const [sessionSaved, setSessionSaved] = useState(false);
+
+  const { user, signOut } = useAuth();
 
   const {
     fetchData,
@@ -72,6 +81,8 @@ const KeywordAnalyzer: React.FC = () => {
     const progressInterval = simulateProgress();
     setShowProfessionalReport(false);
     setShowSummaryReport(false);
+    setShowFlashCards(false);
+    setSessionSaved(false);
 
     try {
       // Fetch YouTube data
@@ -101,6 +112,7 @@ const KeywordAnalyzer: React.FC = () => {
 
     setShowProfessionalReport(true);
     setShowSummaryReport(false);
+    setShowFlashCards(false);
     await generateReport(analysis, userInput, {
       includeDetailedScores: true,
       includeRecommendations: true,
@@ -114,7 +126,41 @@ const KeywordAnalyzer: React.FC = () => {
 
     setShowSummaryReport(true);
     setShowProfessionalReport(false);
+    setShowFlashCards(true);
     await generateSummaryReport(analysis, userInput);
+  };
+
+  const handleSaveSession = async () => {
+    if (!user || !analysis) return;
+
+    setIsSavingSession(true);
+    try {
+      await saveSession(
+        user.id,
+        userInput.title,
+        userInput.description,
+        analysis,
+        report,
+      );
+      setSessionSaved(true);
+    } catch (error) {
+      console.error("Error saving session:", error);
+    } finally {
+      setIsSavingSession(false);
+    }
+  };
+
+  const handleSelectSession = (session: SessionHistory) => {
+    setUserInput({
+      title: session.title,
+      description: session.description,
+    });
+    setAnalysis(session.analysis_result);
+
+    if (session.report) {
+      setShowSummaryReport(true);
+      setShowFlashCards(true);
+    }
   };
 
   const getScoreColor = (score: number) => {
@@ -143,417 +189,190 @@ const KeywordAnalyzer: React.FC = () => {
   }
 
   return (
-    <div className='w-full max-w-4xl mx-auto p-4 space-y-4'>
-      <Card>
-        <CardHeader>
-          <CardTitle>YouTube Metadata Optimizer v1</CardTitle>
-        </CardHeader>
-        <CardContent className='space-y-4'>
-          <div className='space-y-2'>
-            <label className='block font-medium'>Video Title</label>
-            <input
-              type='text'
-              className='w-full p-2 border rounded'
-              value={userInput.title}
-              onChange={(e) =>
-                setUserInput((prev) => ({ ...prev, title: e.target.value }))
-              }
-              placeholder='Enter your video title'
-            />
-          </div>
+    <>
+      <HistorySidebar
+        onSelectSession={handleSelectSession}
+        onSignOut={signOut}
+      />
 
-          <div className='space-y-2'>
-            <label className='block font-medium'>Video Description</label>
-            <textarea
-              className='w-full p-2 border rounded h-32'
-              value={userInput.description}
-              onChange={(e) =>
-                setUserInput((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              placeholder='Enter your video description'
-            />
-          </div>
-
-          <button
-            onClick={handleAnalyze}
-            disabled={
-              isProcessing ||
-              isLoadingYT ||
-              !userInput.title.trim() ||
-              !userInput.description.trim()
-            }
-            className='w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed'>
-            {isProcessing || isLoadingYT ? (
-              <div className='flex items-center justify-center gap-2'>
-                <Loader className='w-4 h-4 animate-spin' />
-                <span>Processing... {progress}%</span>
-              </div>
-            ) : (
-              "Analyze Metadata"
-            )}
-          </button>
-
-          {(isProcessing || isLoadingYT) && (
-            <div className='w-full bg-gray-200 rounded-full h-2'>
-              <div
-                className='bg-blue-600 h-2 rounded-full transition-all duration-300 ease-in-out'
-                style={{ width: `${progress}%` }}
+      <div className='w-full max-w-4xl mx-auto p-4 space-y-4 mt-10'>
+        <Card>
+          <CardHeader>
+            <CardTitle className='flex items-center justify-between'>
+              <span>YouTube Metadata Optimizer</span>
+              {sessionSaved && (
+                <span className='text-sm font-normal text-green-600 flex items-center gap-1'>
+                  <svg
+                    xmlns='http://www.w3.org/2000/svg'
+                    className='h-4 w-4'
+                    viewBox='0 0 20 20'
+                    fill='currentColor'>
+                    <path
+                      fillRule='evenodd'
+                      d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
+                      clipRule='evenodd'
+                    />
+                  </svg>
+                  Session saved
+                </span>
+              )}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className='space-y-4'>
+            <div className='space-y-2'>
+              <label className='block text-sm font-medium text-neutral-700'>
+                Video Title
+              </label>
+              <input
+                type='text'
+                className='w-full p-3 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors'
+                value={userInput.title}
+                onChange={(e) =>
+                  setUserInput((prev) => ({ ...prev, title: e.target.value }))
+                }
+                placeholder='Enter your video title'
               />
             </div>
-          )}
-        </CardContent>
-      </Card>
 
-      {analysis && (
-        <>
-          {/* Summary Report (if displayed) */}
-          {showSummaryReport && (
-            <SummaryReport
-              report={report}
-              isLoading={isGeneratingReport}
-              error={reportError}
-            />
-          )}
+            <div className='space-y-2'>
+              <label className='block text-sm font-medium text-neutral-700'>
+                Video Description
+              </label>
+              <textarea
+                className='w-full p-3 border border-neutral-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors h-32'
+                value={userInput.description}
+                onChange={(e) =>
+                  setUserInput((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
+                placeholder='Enter your video description'
+              />
+            </div>
 
-          {/* Overall Scores Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Award className='w-5 h-5' />
-                Overall Performance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className='grid grid-cols-3 gap-4'>
-                <div className='text-center'>
-                  <div
-                    className={`text-3xl font-bold ${getScoreColor(
-                      analysis.scores.title,
-                    )}`}>
-                    {analysis.scores.title.toFixed(1)}%
+            <div className='flex gap-3'>
+              <Button
+                onClick={handleAnalyze}
+                disabled={
+                  isProcessing ||
+                  isLoadingYT ||
+                  !userInput.title.trim() ||
+                  !userInput.description.trim()
+                }
+                className='flex-1 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors'>
+                {isProcessing || isLoadingYT ? (
+                  <div className='flex items-center justify-center gap-2'>
+                    <Loader className='w-4 h-4 animate-spin' />
+                    <span>Processing... {progress}%</span>
                   </div>
-                  <div className='text-sm text-gray-600'>Title Score</div>
-                </div>
-                <div className='text-center'>
-                  <div
-                    className={`text-3xl font-bold ${getScoreColor(
-                      analysis.scores.description,
-                    )}`}>
-                    {analysis.scores.description.toFixed(1)}%
-                  </div>
-                  <div className='text-sm text-gray-600'>Description Score</div>
-                </div>
-                <div className='text-center'>
-                  <div
-                    className={`text-3xl font-bold ${getScoreColor(
-                      analysis.scores.overall,
-                    )}`}>
-                    {analysis.scores.overall.toFixed(1)}%
-                  </div>
-                  <div className='text-sm text-gray-600'>Overall Score</div>
-                </div>
-              </div>
+                ) : (
+                  "Analyze Metadata"
+                )}
+              </Button>
 
-              <div className='mt-6 flex gap-2'>
-                <button
-                  onClick={handleGenerateSummaryReport}
-                  disabled={isGeneratingReport}
-                  className='flex-1 bg-emerald-600 text-white py-2 rounded hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'>
-                  {isGeneratingReport && showSummaryReport ? (
-                    <>
-                      <Loader className='w-4 h-4 animate-spin' />
-                      <span>Generating Summary...</span>
-                    </>
+              {analysis && user && (
+                <Button
+                  onClick={handleSaveSession}
+                  disabled={isSavingSession || sessionSaved}
+                  variant='outline'
+                  className='px-4'>
+                  {isSavingSession ? (
+                    <Loader className='h-4 w-4 animate-spin' />
+                  ) : sessionSaved ? (
+                    "Saved"
                   ) : (
-                    <>
-                      <MessageSquare className='w-4 h-4' />
-                      <span>Quick Summary</span>
-                    </>
+                    "Save Session"
                   )}
-                </button>
+                </Button>
+              )}
+            </div>
 
-                <button
-                  onClick={handleGenerateReport}
-                  disabled={isGeneratingReport}
-                  className='flex-1 bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2'>
-                  {isGeneratingReport && showProfessionalReport ? (
-                    <>
-                      <Loader className='w-4 h-4 animate-spin' />
-                      <span>Generating Professional Report...</span>
-                    </>
-                  ) : (
-                    <>
-                      <FileText className='w-4 h-4' />
-                      <span>Detailed Report</span>
-                    </>
-                  )}
-                </button>
+            {(isProcessing || isLoadingYT) && (
+              <div className='w-full bg-gray-200 rounded-full h-2'>
+                <div
+                  className='bg-purple-600 h-2 rounded-full transition-all duration-300 ease-in-out'
+                  style={{ width: `${progress}%` }}
+                />
               </div>
-            </CardContent>
-          </Card>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* Title Analysis Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Type className='w-5 h-5' />
-                Title Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='space-y-2'>
-                  <div className='text-sm font-medium'>Keyword Relevance</div>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-full bg-gray-200 rounded-full h-2'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{
-                          width: `${analysis.factors.title.keywordRelevance}%`,
-                        }}
-                      />
-                    </div>
-                    <span className='text-sm'>
-                      {analysis.factors.title.keywordRelevance.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <div className='text-sm font-medium'>Keyword Placement</div>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-full bg-gray-200 rounded-full h-2'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{
-                          width: `${analysis.factors.title.keywordPlacement}%`,
-                        }}
-                      />
-                    </div>
-                    <span className='text-sm'>
-                      {analysis.factors.title.keywordPlacement.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <div className='text-sm font-medium'>Length Score</div>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-full bg-gray-200 rounded-full h-2'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{
-                          width: `${analysis.factors.title.lengthScore}%`,
-                        }}
-                      />
-                    </div>
-                    <span className='text-sm'>
-                      {analysis.factors.title.lengthScore.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <div className='text-sm font-medium'>Uniqueness Score</div>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-full bg-gray-200 rounded-full h-2'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{
-                          width: `${analysis.factors.title.uniquenessScore}%`,
-                        }}
-                      />
-                    </div>
-                    <span className='text-sm'>
-                      {analysis.factors.title.uniquenessScore.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+        {analysis && (
+          <>
+            {/* Summary Report (if displayed) */}
+            {showSummaryReport && (
+              <AISummaryReportCard
+                report={report}
+                isLoading={isGeneratingReport}
+                error={reportError}
+                onViewDetailedReport={handleGenerateReport}
+              />
+            )}
 
-          {/* Description Analysis Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <BarChart2 className='w-5 h-5' />
-                Description Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='grid grid-cols-2 gap-4'>
-                <div className='space-y-2'>
-                  <div className='text-sm font-medium'>Keyword Coverage</div>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-full bg-gray-200 rounded-full h-2'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{
-                          width: `${analysis.factors.description.keywordCoverage}%`,
-                        }}
-                      />
-                    </div>
-                    <span className='text-sm'>
-                      {analysis.factors.description.keywordCoverage.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <div className='text-sm font-medium'>Keyword Placement</div>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-full bg-gray-200 rounded-full h-2'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{
-                          width: `${analysis.factors.description.keywordPlacement}%`,
-                        }}
-                      />
-                    </div>
-                    <span className='text-sm'>
-                      {analysis.factors.description.keywordPlacement.toFixed(1)}
-                      %
-                    </span>
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <div className='text-sm font-medium'>Length Score</div>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-full bg-gray-200 rounded-full h-2'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{
-                          width: `${analysis.factors.description.lengthScore}%`,
-                        }}
-                      />
-                    </div>
-                    <span className='text-sm'>
-                      {analysis.factors.description.lengthScore.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <div className='text-sm font-medium'>CTA Score</div>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-full bg-gray-200 rounded-full h-2'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{
-                          width: `${analysis.factors.description.ctaScore}%`,
-                        }}
-                      />
-                    </div>
-                    <span className='text-sm'>
-                      {analysis.factors.description.ctaScore.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-                <div className='space-y-2'>
-                  <div className='text-sm font-medium'>Hashtag Score</div>
-                  <div className='flex items-center gap-2'>
-                    <div className='w-full bg-gray-200 rounded-full h-2'>
-                      <div
-                        className='bg-blue-600 h-2 rounded-full'
-                        style={{
-                          width: `${analysis.factors.description.hashtagScore}%`,
-                        }}
-                      />
-                    </div>
-                    <span className='text-sm'>
-                      {analysis.factors.description.hashtagScore.toFixed(1)}%
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+            {/* Report Flash Cards */}
+            {showFlashCards && report && <ReportFlashCards report={report} />}
 
-          {/* Recommendations Card */}
-          <Card>
-            <CardHeader>
-              <CardTitle className='flex items-center gap-2'>
-                <Fingerprint className='w-5 h-5' />
-                Recommendations
-              </CardTitle>
-            </CardHeader>
-            <CardContent className='space-y-4'>
-              <div className='space-y-4'>
-                <h3 className='font-medium text-lg'>For Title</h3>
-                <ul className='space-y-2'>
-                  {analysis.recommendations.title.map(
-                    (rec: { priority: string; message: string }, i: number) => (
-                      <li
-                        key={i}
-                        className={`border-l-4 pl-3 py-1 ${
-                          rec.priority === "high"
-                            ? "border-red-500 bg-red-50"
-                            : rec.priority === "medium"
-                            ? "border-yellow-500 bg-yellow-50"
-                            : "border-blue-500 bg-blue-50"
-                        }`}>
-                        <div className='flex items-start'>
-                          <div
-                            className={`text-xs uppercase font-medium ${
-                              rec.priority === "high"
-                                ? "text-red-600"
-                                : rec.priority === "medium"
-                                ? "text-yellow-600"
-                                : "text-blue-600"
-                            }`}>
-                            {rec.priority}
-                          </div>
-                        </div>
-                        <div>{rec.message}</div>
-                      </li>
-                    ),
-                  )}
-                </ul>
+            {/* Professional Report (if displayed) */}
+            {showProfessionalReport && (
+              <ProfessionalReportCard
+                report={report}
+                isLoading={isGeneratingReport}
+                error={reportError}
+              />
+            )}
 
-                <h3 className='font-medium text-lg pt-2'>For Description</h3>
-                <ul className='space-y-2'>
-                  {analysis.recommendations.description.map(
-                    (rec: { priority: string; message: string }, i: number) => (
-                      <li
-                        key={i}
-                        className={`border-l-4 pl-3 py-1 ${
-                          rec.priority === "high"
-                            ? "border-red-500 bg-red-50"
-                            : rec.priority === "medium"
-                            ? "border-yellow-500 bg-yellow-50"
-                            : "border-blue-500 bg-blue-50"
-                        }`}>
-                        <div className='flex items-start'>
-                          <div
-                            className={`text-xs uppercase font-medium ${
-                              rec.priority === "high"
-                                ? "text-red-600"
-                                : rec.priority === "medium"
-                                ? "text-yellow-600"
-                                : "text-blue-600"
-                            }`}>
-                            {rec.priority}
-                          </div>
-                        </div>
-                        <div>{rec.message}</div>
-                      </li>
-                    ),
-                  )}
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Professional Report (if displayed) */}
-          {showProfessionalReport && (
-            <ProfessionalReport
-              report={report}
-              isLoading={isGeneratingReport}
-              error={reportError}
+            {/* Summary Report Cards - Always shown when analysis exists */}
+            <SummaryReportCards
+              analysis={analysis}
+              isLoading={false}
+              error={null}
             />
-          )}
-        </>
-      )}
-    </div>
+
+            {/* Recommendation Cards */}
+            <RecommendationCards recommendations={analysis.recommendations} />
+
+            {/* Buttons for generating reports */}
+            <div className='flex gap-4 mb-6'>
+              <Button
+                onClick={handleGenerateSummaryReport}
+                disabled={isGeneratingReport}
+                className='flex-1 bg-gradient-to-r from-purple-500 to-violet-500 text-white py-3 px-4 rounded-xl shadow-md hover:from-purple-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all'>
+                {isGeneratingReport && showSummaryReport ? (
+                  <>
+                    <Loader className='w-5 h-5 animate-spin' />
+                    <span>Generating Summary...</span>
+                  </>
+                ) : (
+                  <>
+                    <MessageSquare className='w-5 h-5' />
+                    <span>Quick Summary Report</span>
+                  </>
+                )}
+              </Button>
+
+              <Button
+                onClick={handleGenerateReport}
+                disabled={isGeneratingReport}
+                className='flex-1 bg-gradient-to-r from-violet-500 to-purple-500 text-white py-3 px-4 rounded-xl shadow-md hover:from-violet-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all'>
+                {isGeneratingReport && showProfessionalReport ? (
+                  <>
+                    <Loader className='w-5 h-5 animate-spin' />
+                    <span>Generating Report...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText className='w-5 h-5' />
+                    <span>Detailed Professional Report</span>
+                  </>
+                )}
+              </Button>
+            </div>
+          </>
+        )}
+      </div>
+    </>
   );
 };
 
