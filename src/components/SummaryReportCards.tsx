@@ -184,15 +184,6 @@ const SummaryReportCards: React.FC<SummaryReportCardsProps> = ({
               </div>
               <div className='text-xs text-gray-500'>Length</div>
             </div>
-            <div>
-              <div
-                className={`text-sm ${getPercentageClass(
-                  analysis.factors.title.uniquenessScore,
-                )}`}>
-                {analysis.factors.title.uniquenessScore.toFixed(1)}%
-              </div>
-              <div className='text-xs text-gray-500'>Uniqueness</div>
-            </div>
           </div>
         </div>
       </div>

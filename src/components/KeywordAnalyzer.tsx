@@ -40,9 +40,7 @@ const KeywordAnalyzer: React.FC = () => {
   const [analysis, setAnalysis] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [showProfessionalReport, setShowProfessionalReport] = useState(false);
-  const [showSummaryReport, setShowSummaryReport] = useState(false);
-  const [showFlashCards, setShowFlashCards] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   const [isSavingSession, setIsSavingSession] = useState(false);
   const [sessionSaved, setSessionSaved] = useState(false);
 
@@ -56,7 +54,6 @@ const KeywordAnalyzer: React.FC = () => {
 
   const {
     generateReport,
-    generateSummaryReport,
     report,
     isLoading: isGeneratingReport,
     error: reportError,
@@ -79,24 +76,15 @@ const KeywordAnalyzer: React.FC = () => {
   const handleAnalyze = async () => {
     setIsProcessing(true);
     const progressInterval = simulateProgress();
-    setShowProfessionalReport(false);
-    setShowSummaryReport(false);
-    setShowFlashCards(false);
+    setShowReport(false);
     setSessionSaved(false);
 
     try {
-      // Fetch YouTube data
-      const youtubeData = await fetchData(
-        userInput.title,
-        userInput.description,
-      );
-
-      // Use the fetched data for analysis
+      const youtubeData = await fetchData(userInput.title);
       const result = await analyzeMetadata(userInput, youtubeData);
       setAnalysis(result);
     } catch (error) {
       console.error("Analysis failed:", error);
-      // You might want to show an error message to the user here
     } finally {
       clearInterval(progressInterval);
       setProgress(100);
@@ -110,24 +98,9 @@ const KeywordAnalyzer: React.FC = () => {
   const handleGenerateReport = async () => {
     if (!analysis) return;
 
-    setShowProfessionalReport(true);
-    setShowSummaryReport(false);
-    setShowFlashCards(false);
-    await generateReport(analysis, userInput, {
-      includeDetailedScores: true,
-      includeRecommendations: true,
-      professionalTone: true,
-      maxLength: 1500,
-    });
-  };
-
-  const handleGenerateSummaryReport = async () => {
-    if (!analysis) return;
-
-    setShowSummaryReport(true);
-    setShowProfessionalReport(false);
-    setShowFlashCards(true);
-    await generateSummaryReport(analysis, userInput);
+    setShowReport(true);
+    const youtubeData = await fetchData(userInput.title);
+    await generateReport(analysis, userInput, youtubeData);
   };
 
   const handleSaveSession = async () => {
@@ -158,8 +131,7 @@ const KeywordAnalyzer: React.FC = () => {
     setAnalysis(session.analysis_result);
 
     if (session.report) {
-      setShowSummaryReport(true);
-      setShowFlashCards(true);
+      setShowReport(true);
     }
   };
 
@@ -301,73 +273,285 @@ const KeywordAnalyzer: React.FC = () => {
 
         {analysis && (
           <>
-            {/* Summary Report (if displayed) */}
-            {showSummaryReport && (
-              <AISummaryReportCard
-                report={report}
-                isLoading={isGeneratingReport}
-                error={reportError}
-                onViewDetailedReport={handleGenerateReport}
-              />
+            {/* Score Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-blue-700">
+                    <BarChart2 className="w-5 h-5" />
+                    <span>Title Score</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold text-blue-600 mb-4">
+                    {analysis.scores.title.toFixed(1)}%
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Keyword Relevance</span>
+                      <span className="text-sm font-medium text-blue-600">{analysis.factors.title.keywordRelevance.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Keyword Placement</span>
+                      <span className="text-sm font-medium text-blue-600">{analysis.factors.title.keywordPlacement.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Length Score</span>
+                      <span className="text-sm font-medium text-blue-600">{analysis.factors.title.lengthScore.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-purple-100 bg-gradient-to-br from-purple-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-purple-700">
+                    <FileText className="w-5 h-5" />
+                    <span>Description Score</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold text-purple-600 mb-4">
+                    {analysis.scores.description.toFixed(1)}%
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Keyword Coverage</span>
+                      <span className="text-sm font-medium text-purple-600">{analysis.factors.description.keywordCoverage.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Keyword Placement</span>
+                      <span className="text-sm font-medium text-purple-600">{analysis.factors.description.keywordPlacement.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Length Score</span>
+                      <span className="text-sm font-medium text-purple-600">{analysis.factors.description.lengthScore.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">CTA Score</span>
+                      <span className="text-sm font-medium text-purple-600">{analysis.factors.description.ctaScore.toFixed(1)}%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">Hashtag Score</span>
+                      <span className="text-sm font-medium text-purple-600">{analysis.factors.description.hashtagScore.toFixed(1)}%</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-green-100 bg-gradient-to-br from-green-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-green-700">
+                    <Award className="w-5 h-5" />
+                    <span>Overall Score</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-4xl font-bold text-green-600 mb-4">
+                    {analysis.scores.overall.toFixed(1)}%
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Based on weighted analysis of title and description
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Top Keywords Information */}
+            <div className="space-y-6">
+              <Card className="border-blue-100 bg-gradient-to-br from-blue-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-blue-700">
+                    <Hash className="w-5 h-5" />
+                    <span>Top Title Keywords</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.topKeywords.title.map((keyword, index) => (
+                      <span
+                        key={index}
+                        className="px-4 py-1.5 bg-blue-100 text-blue-800 rounded-full text-sm font-medium shadow-sm hover:shadow transition-shadow"
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-purple-100 bg-gradient-to-br from-purple-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-purple-700">
+                    <Type className="w-5 h-5" />
+                    <span>Top Description Keywords</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.topKeywords.description.map((keyword, index) => (
+                      <span
+                        key={index}
+                        className="px-4 py-1.5 bg-purple-100 text-purple-800 rounded-full text-sm font-medium shadow-sm hover:shadow transition-shadow"
+                      >
+                        {keyword}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="border-pink-100 bg-gradient-to-br from-pink-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-pink-700">
+                    <Hash className="w-5 h-5" />
+                    <span>Top Hashtags</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-wrap gap-2">
+                    {analysis.topHashtags.map((hashtag, index) => (
+                      <span
+                        key={index}
+                        className="px-4 py-1.5 bg-pink-100 text-pink-800 rounded-full text-sm font-medium shadow-sm hover:shadow transition-shadow"
+                      >
+                        {hashtag}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Recommendations */}
+            <div className="space-y-6">
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <MessageSquare className="w-5 h-5" />
+                    <span>Title Recommendations</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {analysis.recommendations.title.map((rec, index) => (
+                      <li key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg shadow-sm">
+                        <div className={`w-2 h-2 rounded-full mt-1.5 ${
+                          rec.priority === 'high' ? 'bg-red-500' :
+                          rec.priority === 'medium' ? 'bg-yellow-500' :
+                          'bg-green-500'
+                        }`} />
+                        <span className="text-sm text-gray-700">{rec.message}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <MessageSquare className="w-5 h-5" />
+                    <span>Description Recommendations</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    {analysis.recommendations.description.map((rec, index) => (
+                      <li key={index} className="flex items-start gap-3 p-3 bg-white rounded-lg shadow-sm">
+                        <div className={`w-2 h-2 rounded-full mt-1.5 ${
+                          rec.priority === 'high' ? 'bg-red-500' :
+                          rec.priority === 'medium' ? 'bg-yellow-500' :
+                          'bg-green-500'
+                        }`} />
+                        <span className="text-sm text-gray-700">{rec.message}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Improvement Report */}
+            {showReport && (
+              <Card className="border-green-100 bg-gradient-to-br from-green-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-green-700">
+                    <FileText className="w-5 h-5" />
+                    <span>Improvement Report</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isGeneratingReport ? (
+                    <div className="flex justify-center items-center h-40">
+                      <div className="flex flex-col items-center gap-3">
+                        <Loader className="h-10 w-10 animate-spin text-green-500" />
+                        <p className="text-sm text-gray-500">Generating improvement suggestions...</p>
+                      </div>
+                    </div>
+                  ) : reportError ? (
+                    <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg text-red-600">
+                      <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <h3 className="font-medium">Error generating report</h3>
+                        <p className="text-sm mt-1 text-red-500">{reportError}</p>
+                      </div>
+                    </div>
+                  ) : report ? (
+                    <div className="prose prose-green max-w-none">
+                      <div className="space-y-6">
+                        {report.split("\n\n").map((section, index) => (
+                          <div key={index} className="space-y-2">
+                            {section.split("\n").map((line, lineIndex) => (
+                              <p key={lineIndex} className="text-gray-800">
+                                {line}
+                              </p>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
             )}
 
-            {/* Report Flash Cards */}
-            {showFlashCards && report && <ReportFlashCards report={report} />}
-
-            {/* Professional Report (if displayed) */}
-            {showProfessionalReport && (
-              <ProfessionalReportCard
-                report={report}
-                isLoading={isGeneratingReport}
-                error={reportError}
-              />
-            )}
-
-            {/* Summary Report Cards - Always shown when analysis exists */}
-            <SummaryReportCards
-              analysis={analysis}
-              isLoading={false}
-              error={null}
-            />
-
-            {/* Recommendation Cards */}
-            <RecommendationCards recommendations={analysis.recommendations} />
-
-            {/* Buttons for generating reports */}
-            <div className='flex gap-4 mb-6'>
-              <Button
-                onClick={handleGenerateSummaryReport}
-                disabled={isGeneratingReport}
-                className='flex-1 bg-gradient-to-r from-purple-500 to-violet-500 text-white py-3 px-4 rounded-xl shadow-md hover:from-purple-600 hover:to-violet-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all'>
-                {isGeneratingReport && showSummaryReport ? (
-                  <>
-                    <Loader className='w-5 h-5 animate-spin' />
-                    <span>Generating Summary...</span>
-                  </>
-                ) : (
-                  <>
-                    <MessageSquare className='w-5 h-5' />
-                    <span>Quick Summary Report</span>
-                  </>
-                )}
-              </Button>
-
+            {/* Buttons */}
+            <div className="flex gap-4">
               <Button
                 onClick={handleGenerateReport}
                 disabled={isGeneratingReport}
-                className='flex-1 bg-gradient-to-r from-violet-500 to-purple-500 text-white py-3 px-4 rounded-xl shadow-md hover:from-violet-600 hover:to-purple-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all'>
-                {isGeneratingReport && showProfessionalReport ? (
+                className="flex-1 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-4 rounded-xl shadow-md hover:from-green-600 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:shadow-lg"
+              >
+                {isGeneratingReport ? (
                   <>
-                    <Loader className='w-5 h-5 animate-spin' />
-                    <span>Generating Report...</span>
+                    <Loader className="w-5 h-5 animate-spin" />
+                    <span>Generating Improvements...</span>
                   </>
                 ) : (
                   <>
-                    <FileText className='w-5 h-5' />
-                    <span>Detailed Professional Report</span>
+                    <FileText className="w-5 h-5" />
+                    <span>Generate Improvement Report</span>
                   </>
                 )}
               </Button>
+
+              {user && (
+                <Button
+                  onClick={handleSaveSession}
+                  disabled={isSavingSession || sessionSaved}
+                  variant="outline"
+                  className="px-4 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                >
+                  {isSavingSession ? (
+                    <Loader className="h-4 w-4 animate-spin" />
+                  ) : sessionSaved ? (
+                    "Saved"
+                  ) : (
+                    "Save Session"
+                  )}
+                </Button>
+              )}
             </div>
           </>
         )}

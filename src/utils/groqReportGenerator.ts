@@ -12,7 +12,6 @@ export interface AnalysisResult {
       keywordRelevance: number;
       keywordPlacement: number;
       lengthScore: number;
-      uniquenessScore: number;
     };
     description: {
       keywordCoverage: number;
@@ -32,6 +31,11 @@ export interface AnalysisResult {
       message: string;
     }>;
   };
+  topKeywords: {
+    title: string[];
+    description: string[];
+  };
+  topHashtags: string[];
 }
 
 export interface UserInput {
@@ -40,15 +44,17 @@ export interface UserInput {
 }
 
 export interface ReportOptions {
-  includeDetailedScores: boolean;
-  includeRecommendations: boolean;
-  professionalTone: boolean;
   maxLength?: number;
 }
 
 export interface GeneratedReport {
   report: string;
   error?: string;
+}
+
+export interface SampleData {
+  titles: string;
+  descriptions: string;
 }
 
 // Main class for generating reports using the Groq API
@@ -61,97 +67,20 @@ export class GroqReportGenerator {
     this.apiKey = apiKey;
   }
 
-  // Generate a summary report
-  async generateSummaryReport(
-    analysis: AnalysisResult,
-    userInput: UserInput
-  ): Promise<GeneratedReport> {
-    try {
-      if (!this.apiKey) {
-        throw new Error("Groq API key is not provided");
-      }
-
-      // Build a concise prompt for summary
-      const prompt = this.buildSummaryPrompt(analysis, userInput);
-
-      // Make API call to Groq
-      const response = await axios.post(
-        this.baseUrl,
-        {
-          model: this.model,
-          messages: [
-            {
-              role: "system",
-              content:
-                "You are a concise YouTube SEO consultant. Provide a single paragraph assessment that captures the essence of the content quality and offers clear improvement suggestions. Use bullet points to highlight the key points.",
-            },
-            {
-              role: "user",
-              content: prompt,
-            },
-          ],
-          temperature: 0.7,
-          max_tokens: 300,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.apiKey}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      // Check for valid response
-      if (
-        !response.data ||
-        !response.data.choices ||
-        !response.data.choices[0]
-      ) {
-        throw new Error("Invalid response format from Groq API");
-      }
-
-      return {
-        report: response.data.choices[0].message.content,
-      };
-    } catch (error) {
-      console.error("Error generating summary report with Groq:", error);
-      let errorMessage = "Unknown error occurred";
-
-      // Handle different types of errors
-      if (axios.isAxiosError(error) && error.response) {
-        errorMessage = `API Error (${error.response.status}): ${JSON.stringify(
-          error.response.data
-        )}`;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      return {
-        report: "",
-        error: errorMessage,
-      };
-    }
-  }
-
-  // Generate a detailed report
+  // Generate improvement report with two alternative title-description pairs
   async generateReport(
     analysis: AnalysisResult,
     userInput: UserInput,
-    options: ReportOptions = {
-      includeDetailedScores: true,
-      includeRecommendations: true,
-      professionalTone: true,
-    }
+    sampleData: SampleData,
+    options: ReportOptions = {}
   ): Promise<GeneratedReport> {
     try {
       if (!this.apiKey) {
         throw new Error("Groq API key is not provided");
       }
 
-      // Prepare the content for the prompt
-      const prompt = this.buildPrompt(analysis, userInput, options);
+      const prompt = this.buildPrompt(analysis, userInput, sampleData);
 
-      // Make API call to Groq
       const response = await axios.post(
         this.baseUrl,
         {
@@ -160,7 +89,7 @@ export class GroqReportGenerator {
             {
               role: "system",
               content:
-                "You are a professional YouTube SEO consultant helping content creators optimize their metadata for better discoverability and engagement. Provide clear, actionable insights in a professional tone.",
+                "You are a YouTube SEO expert. Your task is to generate two alternative title and description pairs that take inspiration from successful videos while incorporating all the provided recommendations, keywords, and best practices. Each pair should be optimized for search and engagement while maintaining semantic correctness and natural flow. Focus on creating titles and descriptions that the user can use directly.",
             },
             {
               role: "user",
@@ -178,167 +107,84 @@ export class GroqReportGenerator {
         }
       );
 
-      // Check for valid response
-      if (
-        !response.data ||
-        !response.data.choices ||
-        !response.data.choices[0]
-      ) {
+      // Validate response
+      if (!response.data?.choices?.[0]?.message?.content) {
         throw new Error("Invalid response format from Groq API");
       }
 
-      return {
-        report: response.data.choices[0].message.content,
-      };
-    } catch (error) {
-      console.error("Error generating report with Groq:", error);
-      let errorMessage = "Unknown error occurred";
+      const report = response.data.choices[0].message.content;
 
-      // Handle different types of errors
-      if (axios.isAxiosError(error) && error.response) {
-        errorMessage = `API Error (${error.response.status}): ${JSON.stringify(
-          error.response.data
-        )}`;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
+      // Validate report content
+      if (!report || report.length < 100) {
+        throw new Error("Generated report is too short or empty");
       }
 
+      return { report };
+    } catch (error) {
+      console.error("Error generating report with Groq:", error);
       return {
         report: "",
-        error: errorMessage,
+        error: this.handleError(error),
       };
     }
   }
 
-  // Build prompt for summary report
-  private buildSummaryPrompt(
-    analysis: AnalysisResult,
-    userInput: UserInput
-  ): string {
-    // Format the scores as percentages with 1 decimal place
-    const formatScore = (score: number) => `${score.toFixed(1)}%`;
-
-    let prompt = `Rewrite the video title and description to sound more engaging, professional, and SEO-friendly. Incorporate all the key improvements I've made in the video. Generate two compelling title suggestions and two matching descriptions that clearly communicate the value of the content. Feel free to add relevant hashtags for discoverability.:\n\n`;
-
-    // Add user input and overall scores
-    prompt += `TITLE: "${userInput.title}"\n`;
-    prompt += `DESCRIPTION: "${userInput.description}"\n\n`;
-    prompt += `OVERALL SCORES:\n`;
-    prompt += `- Title Score: ${formatScore(analysis.scores.title)}\n`;
-    prompt += `- Description Score: ${formatScore(
-      analysis.scores.description
-    )}\n`;
-    prompt += `- Overall Score: ${formatScore(analysis.scores.overall)}\n\n`;
-
-    // Add top 2-3 most important recommendations
-    prompt += `TOP TITLE RECOMMENDATIONS:\n`;
-    const titleRecs = analysis.recommendations.title
-      .filter((rec) => rec.priority === "high")
-      .slice(0, 2);
-    titleRecs.forEach((rec) => {
-      prompt += `- ${rec.message}\n`;
-    });
-    prompt += `\n`;
-
-    prompt += `TOP DESCRIPTION RECOMMENDATIONS:\n`;
-    const descRecs = analysis.recommendations.description
-      .filter((rec) => rec.priority === "high")
-      .slice(0, 2);
-    descRecs.forEach((rec) => {
-      prompt += `- ${rec.message}\n`;
-    });
-    prompt += `\n`;
-
-    prompt += `Please generate a single paragraph with bullet points that captures the current quality of the content and clearly articulates what they can improve on. Keep it professional but concise.`;
-
-    return prompt;
-  }
-
-  // Build prompt for detailed report
+  // Build prompt for improvement report
   private buildPrompt(
     analysis: AnalysisResult,
     userInput: UserInput,
-    options: ReportOptions
+    sampleData: SampleData
   ): string {
-    const { includeDetailedScores, includeRecommendations, professionalTone } =
-      options;
+    const { recommendations, topKeywords, topHashtags } = analysis;
+    const { title, description } = userInput;
 
-    // Format the scores as percentages with 1 decimal place
-    const formatScore = (score: number) => `${score.toFixed(1)}%`;
+    let prompt = `Analyze this YouTube video metadata and generate two optimized title and description pairs that incorporate all recommendations and best practices.
 
-    let prompt = `Generate a ${
-      professionalTone ? "professional" : "friendly"
-    } YouTube metadata optimization report based on the following analysis:\n\n`;
+Current Title: "${title}"
+Current Description: "${description}"
 
-    // Add user input and overall scores
-    prompt += `TITLE: "${userInput.title}"\n`;
-    prompt += `DESCRIPTION: "${userInput.description}"\n\n`;
-    prompt += `OVERALL SCORES:\n`;
-    prompt += `- Title Score: ${formatScore(analysis.scores.title)}\n`;
-    prompt += `- Description Score: ${formatScore(
-      analysis.scores.description
-    )}\n`;
-    prompt += `- Overall Score: ${formatScore(analysis.scores.overall)}\n\n`;
+Top Keywords to Use:
+- Title Keywords: ${topKeywords.title.join(", ")}
+- Description Keywords: ${topKeywords.description.join(", ")}
 
-    // Include detailed scores if requested
-    if (includeDetailedScores) {
-      prompt += `TITLE FACTORS:\n`;
-      prompt += `- Keyword Relevance: ${formatScore(
-        analysis.factors.title.keywordRelevance
-      )}\n`;
-      prompt += `- Keyword Placement: ${formatScore(
-        analysis.factors.title.keywordPlacement
-      )}\n`;
-      prompt += `- Length Score: ${formatScore(
-        analysis.factors.title.lengthScore
-      )}\n`;
-      prompt += `- Uniqueness Score: ${formatScore(
-        analysis.factors.title.uniquenessScore
-      )}\n\n`;
+Fetched Hashtags (MUST use these first):
+${topHashtags.length > 0 ? topHashtags.map(tag => `- ${tag}`).join("\n") : "No hashtags found in sample videos"}
 
-      prompt += `DESCRIPTION FACTORS:\n`;
-      prompt += `- Keyword Coverage: ${formatScore(
-        analysis.factors.description.keywordCoverage
-      )}\n`;
-      prompt += `- Keyword Placement: ${formatScore(
-        analysis.factors.description.keywordPlacement
-      )}\n`;
-      prompt += `- Length Score: ${formatScore(
-        analysis.factors.description.lengthScore
-      )}\n`;
-      prompt += `- CTA Score: ${formatScore(
-        analysis.factors.description.ctaScore
-      )}\n`;
-      prompt += `- Hashtag Score: ${formatScore(
-        analysis.factors.description.hashtagScore
-      )}\n\n`;
-    }
+Recommendations to Follow:
+${[...recommendations.title, ...recommendations.description]
+  .map(rec => `- ${rec.message}`)
+  .join("\n")}
 
-    // Include recommendations if requested
-    if (includeRecommendations) {
-      prompt += `TITLE RECOMMENDATIONS:\n`;
-      analysis.recommendations.title.forEach((rec) => {
-        prompt += `- [${rec.priority.toUpperCase()}] ${rec.message}\n`;
-      });
-      prompt += `\n`;
+Length Guidelines:
+- Title: 50-60 characters
+- Description: MINIMUM 170 words (this is a strict requirement)
 
-      prompt += `DESCRIPTION RECOMMENDATIONS:\n`;
-      analysis.recommendations.description.forEach((rec) => {
-        prompt += `- [${rec.priority.toUpperCase()}] ${rec.message}\n`;
-      });
-      prompt += `\n`;
-    }
+Generate two alternative title and description pairs that:
+1. MUST incorporate all the top keywords in appropriate positions
+2. MUST use ALL the fetched hashtags first (if any)
+3. MUST add additional relevant hashtags to reach a total of 5 hashtags in each description
+4. MUST follow all recommendations
+5. MUST have AT LEAST 170 words in each description (this is mandatory)
+6. MUST be optimized for search and engagement
 
-    // Add instructions for report structure
-    prompt += `Please generate a comprehensive report that includes the following:\n`;
-    prompt += `1. A professional introduction summarizing overall performance\n`;
-    prompt += `2. Detailed analysis of the title's strengths and weaknesses\n`;
-    prompt += `3. Detailed analysis of the description's strengths and weaknesses\n`;
-    prompt += `4. Specific, actionable recommendations for improvement\n`;
-    prompt += `5. A summary of expected improvements if recommendations are implemented\n\n`;
+Format the response as:
+Title Option 1: [title]
+Description Option 1: [description with 5 hashtags and minimum 170 words]
 
-    prompt += `The report should be well-structured with clear sections and professional language. Format it for easy readability.`;
+Title Option 2: [title]
+Description Option 2: [description with 5 hashtags and minimum 170 words]`;
 
     return prompt;
+  }
+
+  // Handle errors consistently
+  private handleError(error: unknown): string {
+    if (axios.isAxiosError(error) && error.response) {
+      return `API Error (${error.response.status}): ${JSON.stringify(error.response.data)}`;
+    }
+    if (error instanceof Error) {
+      return error.message;
+    }
+    return "An unknown error occurred";
   }
 }
