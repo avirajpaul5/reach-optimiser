@@ -6,7 +6,7 @@ interface BgGradientProps {
 
 const BgGradient: React.FC<BgGradientProps> = ({ children }) => {
   return (
-    <div className='relative bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-gray-800 min-h-screen flex flex-col justify-start pt-24 pb-10 overflow-hidden'>
+    <div className='relative bg-gradient-to-b from-white to-orange-50 dark:from-gray-900 dark:to-gray-800 min-h-screen flex flex-col justify-start pt-14 pb-10 overflow-hidden'>
       {/* Blurred Gradient Circles - responsive sizing */}
       <div className='absolute top-[-10%] left-[-5%] w-[50%] h-[50vh] md:w-[600px] md:h-[600px] rounded-full bg-orange-300/40 blur-[150px] dark:bg-orange-400/30'></div>
       <div className='absolute bottom-[-10%] right-[-5%] w-[50%] h-[50vh] md:w-[600px] md:h-[600px] rounded-full bg-orange-200/40 blur-[150px] dark:bg-orange-300/30'></div>

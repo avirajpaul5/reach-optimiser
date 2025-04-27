@@ -25,6 +25,7 @@ import HistorySidebar from "./HistorySidebar";
 import { useAuth } from "./AuthProvider";
 import { saveSession, SessionHistory } from "../utils/supabase";
 import { Button } from "./ui/button";
+import Header from "./ui/Header";
 
 type UserInput = {
   title: string;
@@ -43,6 +44,7 @@ const KeywordAnalyzer: React.FC = () => {
   const [showReport, setShowReport] = useState(false);
   const [isSavingSession, setIsSavingSession] = useState(false);
   const [sessionSaved, setSessionSaved] = useState(false);
+  const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
 
   const { user, signOut } = useAuth();
 
@@ -162,12 +164,16 @@ const KeywordAnalyzer: React.FC = () => {
 
   return (
     <>
+      <Header onOpenHistory={() => setHistorySidebarOpen(true)} />
+
       <HistorySidebar
         onSelectSession={handleSelectSession}
         onSignOut={signOut}
+        open={historySidebarOpen}
+        setOpen={setHistorySidebarOpen}
       />
 
-      <div className='w-full max-w-4xl mx-auto p-4 space-y-4 mt-10'>
+      <div className='w-full max-w-4xl mx-auto p-4 space-y-4 mt-16'>
         <Card>
           <CardHeader>
             <CardTitle className='flex items-center justify-between'>
