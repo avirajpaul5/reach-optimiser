@@ -2,6 +2,7 @@ import React, { createContext, useContext } from "react";
 import KeywordAnalyzer from "./components/KeywordAnalyzer";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import AuthForm from "./components/AuthForm";
+import BgGradient from "./components/ui/BgGradient";
 
 interface ApiKeys {
   youtubeApiKey: string;
@@ -46,13 +47,13 @@ const AppContent = () => {
 
 function App() {
   return (
-    <div className='min-h-screen bg-gray-50'>
+    <BgGradient>
       <AuthProvider>
         <ApiKeysProvider>
           <AppContent />
         </ApiKeysProvider>
       </AuthProvider>
-    </div>
+    </BgGradient>
   );
 }
 
