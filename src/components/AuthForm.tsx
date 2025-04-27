@@ -9,7 +9,7 @@ const AuthForm: React.FC = () => {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -29,14 +29,23 @@ const AuthForm: React.FC = () => {
     }
   };
 
+  // Extract user name from email if available
+  const userName = user?.email ? user.email.split("@")[0] : null;
+  const welcomeMessage = userName
+    ? `Welcome ${userName} to Reach Optimizer`
+    : "Welcome to Reach Optimizer";
+
   return (
-    <div className='flex justify-center items-center min-h-screen bg-gray-50'>
-      <Card className='w-full max-w-md shadow-lg'>
+    <div className='flex flex-col justify-center items-center h-[100vh]'>
+      <h1 className='text-3xl font-bold text-orange-800 dark:text-orange-300 mb-6'>
+        {welcomeMessage}
+      </h1>
+      <Card className='w-full max-w-md shadow-lg bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border border-orange-100 dark:border-orange-800/30'>
         <CardHeader className='text-center'>
-          <CardTitle className='text-2xl'>
+          <CardTitle className='text-2xl text-orange-800 dark:text-orange-300'>
             {isSignUp ? "Create Account" : "Welcome Back"}
           </CardTitle>
-          <p className='text-neutral-500 mt-2'>
+          <p className='text-orange-700/80 dark:text-orange-200/80 mt-2'>
             {isSignUp
               ? "Create an account to optimize your YouTube metadata"
               : "Sign in to access your YouTube metadata optimization tools"}
@@ -45,14 +54,16 @@ const AuthForm: React.FC = () => {
         <CardContent>
           <form onSubmit={handleSubmit} className='space-y-4'>
             <div className='space-y-2'>
-              <label htmlFor='email' className='text-sm font-medium'>
+              <label
+                htmlFor='email'
+                className='text-sm font-medium text-orange-900 dark:text-orange-200 text-left block'>
                 Email
               </label>
               <input
                 id='email'
                 type='email'
                 placeholder='your.email@example.com'
-                className='w-full p-3 rounded-md border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                className='w-full p-3 rounded-md border border-orange-200 dark:border-orange-700/50 bg-white/70 dark:bg-gray-800/70 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400'
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -60,14 +71,16 @@ const AuthForm: React.FC = () => {
             </div>
 
             <div className='space-y-2'>
-              <label htmlFor='password' className='text-sm font-medium'>
+              <label
+                htmlFor='password'
+                className='text-sm font-medium text-orange-900 dark:text-orange-200 text-left block'>
                 Password
               </label>
               <input
                 id='password'
                 type='password'
                 placeholder='••••••••'
-                className='w-full p-3 rounded-md border border-neutral-200 focus:outline-none focus:ring-2 focus:ring-blue-500'
+                className='w-full p-3 rounded-md border border-orange-200 dark:border-orange-700/50 bg-white/70 dark:bg-gray-800/70 focus:outline-none focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400'
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
@@ -75,14 +88,14 @@ const AuthForm: React.FC = () => {
             </div>
 
             {error && (
-              <div className='p-3 bg-red-50 text-red-600 text-sm rounded-md'>
+              <div className='p-3 bg-red-50/80 text-red-600 text-sm rounded-md backdrop-blur-sm'>
                 {error}
               </div>
             )}
 
             <Button
               type='submit'
-              className='w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors'
+              className='w-full py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-md transition-colors'
               disabled={loading}>
               {loading ? (
                 <div className='flex items-center justify-center gap-2'>
@@ -113,7 +126,7 @@ const AuthForm: React.FC = () => {
             <div className='text-center mt-4'>
               <button
                 type='button'
-                className='text-blue-600 hover:underline text-sm'
+                className='text-orange-600 hover:text-orange-700 dark:text-orange-400 dark:hover:text-orange-300 hover:underline text-sm'
                 onClick={() => setIsSignUp(!isSignUp)}>
                 {isSignUp
                   ? "Already have an account? Sign in"
