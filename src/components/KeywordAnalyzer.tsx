@@ -1,5 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { Button } from "./ui/button";
+import Header from "./ui/Header";
+import { Input } from "./ui/input";
+import { Textarea } from "./ui/textarea";
 import { Card, CardHeader, CardTitle, CardContent } from "./ui/card";
+import { Progress } from "./ui/progress";
 import {
   AlertCircle,
   Loader,
@@ -10,6 +15,10 @@ import {
   Award,
   FileText,
   MessageSquare,
+  PercentSquare,
+  RefreshCw,
+  Check,
+  Clock,
 } from "lucide-react";
 import { analyzeMetadata } from "../utils/keywordAnalyzer";
 import { useYouTubeData } from "../hooks/useYouTubeData";
@@ -24,8 +33,7 @@ import ReportFlashCards from "./ReportFlashCards";
 import HistorySidebar from "./HistorySidebar";
 import { useAuth } from "./AuthProvider";
 import { saveSession, SessionHistory } from "../utils/supabase";
-import { Button } from "./ui/button";
-import Header from "./ui/Header";
+import ImprovementReportCard from "./ImprovementReportCard";
 
 type UserInput = {
   title: string;
@@ -45,6 +53,7 @@ const KeywordAnalyzer: React.FC = () => {
   const [isSavingSession, setIsSavingSession] = useState(false);
   const [sessionSaved, setSessionSaved] = useState(false);
   const [historySidebarOpen, setHistorySidebarOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const { user, signOut } = useAuth();
 
@@ -80,13 +89,27 @@ const KeywordAnalyzer: React.FC = () => {
     const progressInterval = simulateProgress();
     setShowReport(false);
     setSessionSaved(false);
+    setError(null);
 
     try {
+      console.log("Fetching YouTube data for:", userInput.title);
       const youtubeData = await fetchData(userInput.title);
+      console.log("YouTube data received:", youtubeData);
+
+      console.log("Analyzing metadata...");
       const result = await analyzeMetadata(userInput, youtubeData);
+      console.log("Analysis complete:", result);
+
       setAnalysis(result);
     } catch (error) {
       console.error("Analysis failed:", error);
+      setError(
+        typeof error === "string"
+          ? error
+          : error instanceof Error
+          ? error.message
+          : "An unexpected error occurred during analysis",
+      );
     } finally {
       clearInterval(progressInterval);
       setProgress(100);
@@ -155,6 +178,30 @@ const KeywordAnalyzer: React.FC = () => {
                 Failed to connect to YouTube API. Please check your API key and
                 try again.
               </span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  // After the existing error for YouTube API
+  if (error) {
+    return (
+      <div className='w-full max-w-4xl mx-auto p-4'>
+        <Card>
+          <CardContent className='p-6'>
+            <div className='flex items-start gap-3 p-4 bg-red-50 rounded-lg text-red-600'>
+              <AlertCircle className='h-5 w-5 mt-0.5 flex-shrink-0' />
+              <div>
+                <h3 className='font-medium'>Analysis Error</h3>
+                <p className='text-sm mt-1 text-red-500'>{error}</p>
+                <Button
+                  onClick={() => setError(null)}
+                  className='mt-3 bg-red-600 hover:bg-red-700 text-white'>
+                  Try Again
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -532,13 +579,7 @@ const KeywordAnalyzer: React.FC = () => {
             {/* Improvement Report */}
             {showReport && (
               <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center gap-2 text-orange-700'>
-                    <FileText className='w-5 h-5' />
-                    <span>Improvement Report</span>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+                <CardContent className='py-6'>
                   {isGeneratingReport ? (
                     <div className='flex justify-center items-center h-40'>
                       <div className='flex flex-col items-center gap-3'>
@@ -559,19 +600,14 @@ const KeywordAnalyzer: React.FC = () => {
                       </div>
                     </div>
                   ) : report ? (
-                    <div className='prose prose-orange max-w-none'>
-                      <div className='space-y-6'>
-                        {report.split("\n\n").map((section, index) => (
-                          <div key={index} className='space-y-2'>
-                            {section.split("\n").map((line, lineIndex) => (
-                              <p key={lineIndex} className='text-gray-800'>
-                                {line}
-                              </p>
-                            ))}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    <>
+                      {console.log("Debug - Report received:", report)}
+                      <ImprovementReportCard
+                        report={report}
+                        isLoading={isGeneratingReport}
+                        error={reportError}
+                      />
+                    </>
                   ) : null}
                 </CardContent>
               </Card>

@@ -72,7 +72,7 @@ export class GroqReportGenerator {
     analysis: AnalysisResult,
     userInput: UserInput,
     sampleData: SampleData,
-    options: ReportOptions = {}
+    options: ReportOptions = {},
   ): Promise<GeneratedReport> {
     try {
       if (!this.apiKey) {
@@ -104,7 +104,7 @@ export class GroqReportGenerator {
             Authorization: `Bearer ${this.apiKey}`,
             "Content-Type": "application/json",
           },
-        }
+        },
       );
 
       // Validate response
@@ -133,7 +133,7 @@ export class GroqReportGenerator {
   private buildPrompt(
     analysis: AnalysisResult,
     userInput: UserInput,
-    sampleData: SampleData
+    sampleData: SampleData,
   ): string {
     const { recommendations, topKeywords, topHashtags } = analysis;
     const { title, description } = userInput;
@@ -148,11 +148,15 @@ Top Keywords to Use:
 - Description Keywords: ${topKeywords.description.join(", ")}
 
 Fetched Hashtags (MUST use these first):
-${topHashtags.length > 0 ? topHashtags.map(tag => `- ${tag}`).join("\n") : "No hashtags found in sample videos"}
+${
+  topHashtags.length > 0
+    ? topHashtags.map((tag) => `- ${tag}`).join("\n")
+    : "No hashtags found in sample videos"
+}
 
 Recommendations to Follow:
 ${[...recommendations.title, ...recommendations.description]
-  .map(rec => `- ${rec.message}`)
+  .map((rec) => `- ${rec.message}`)
   .join("\n")}
 
 Length Guidelines:
@@ -167,12 +171,15 @@ Generate two alternative title and description pairs that:
 5. MUST have AT LEAST 170 words in each description (this is mandatory)
 6. MUST be optimized for search and engagement
 
-Format the response as:
+Format the response in EXACTLY this structure without any additional text:
+
 Title Option 1: [title]
 Description Option 1: [description with 5 hashtags and minimum 170 words]
 
 Title Option 2: [title]
-Description Option 2: [description with 5 hashtags and minimum 170 words]`;
+Description Option 2: [description with 5 hashtags and minimum 170 words]
+
+DO NOT include any asterisks, headings, or extra formatting. Please provide ONLY the title and description pairs in the exact format specified above.`;
 
     return prompt;
   }
@@ -180,7 +187,9 @@ Description Option 2: [description with 5 hashtags and minimum 170 words]`;
   // Handle errors consistently
   private handleError(error: unknown): string {
     if (axios.isAxiosError(error) && error.response) {
-      return `API Error (${error.response.status}): ${JSON.stringify(error.response.data)}`;
+      return `API Error (${error.response.status}): ${JSON.stringify(
+        error.response.data,
+      )}`;
     }
     if (error instanceof Error) {
       return error.message;

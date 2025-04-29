@@ -3,6 +3,7 @@ import KeywordAnalyzer from "./components/KeywordAnalyzer";
 import { AuthProvider, useAuth } from "./components/AuthProvider";
 import AuthForm from "./components/AuthForm";
 import BgGradient from "./components/ui/BgGradient";
+import { ToastProvider } from "./components/ui/use-toast";
 
 interface ApiKeys {
   youtubeApiKey: string;
@@ -48,11 +49,13 @@ const AppContent = () => {
 function App() {
   return (
     <BgGradient>
-      <AuthProvider>
-        <ApiKeysProvider>
-          <AppContent />
-        </ApiKeysProvider>
-      </AuthProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <ApiKeysProvider>
+            <AppContent />
+          </ApiKeysProvider>
+        </AuthProvider>
+      </ToastProvider>
     </BgGradient>
   );
 }
