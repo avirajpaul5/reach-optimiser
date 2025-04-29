@@ -1,44 +1,92 @@
 // Remove natural import and replace with custom implementation
 const STOPWORDS = new Set([
-  "a", "an", "and", "are", "as", "at", "be", "by", "for", "from", "has", "he",
-  "in", "is", "it", "its", "of", "on", "that", "the", "to", "was", "were",
-  "will", "with", "https", "http", "www", "com", "youtube", "watch", "v=",
-  "channel", "subscribe", "like", "share", "comment", "follow", "social",
-  "media", "link", "links", "click", "here", "below", "above", "description",
-  "video", "videos", "shorts", "short", "reels", "reel"
+  "a",
+  "an",
+  "and",
+  "are",
+  "as",
+  "at",
+  "be",
+  "by",
+  "for",
+  "from",
+  "has",
+  "he",
+  "in",
+  "is",
+  "it",
+  "its",
+  "of",
+  "on",
+  "that",
+  "the",
+  "to",
+  "was",
+  "were",
+  "will",
+  "with",
+  "https",
+  "http",
+  "www",
+  "com",
+  "youtube",
+  "watch",
+  "v=",
+  "channel",
+  "subscribe",
+  "like",
+  "share",
+  "comment",
+  "follow",
+  "social",
+  "media",
+  "link",
+  "links",
+  "click",
+  "here",
+  "below",
+  "above",
+  "description",
+  "video",
+  "videos",
+  "shorts",
+  "short",
+  "reels",
+  "reel",
 ]);
 
 const tokenize = (text: string): string[] => {
-  return text.toLowerCase()
-    .replace(/[^\w\s]/g, '')
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s]/g, "")
     .split(/\s+/)
-    .filter(word => word.length > 0 && !STOPWORDS.has(word));
+    .filter((word) => word.length > 0 && !STOPWORDS.has(word));
 };
 
 const calculateTFIDFScore = (text: string, corpus: string[]): number => {
   // Tokenize all documents
-  const documents = corpus.map(doc => tokenize(doc));
+  const documents = corpus.map((doc) => tokenize(doc));
   const queryTokens = tokenize(text);
-  
+
   // Calculate IDF for each term in the query
   const idfScores: Record<string, number> = {};
-  queryTokens.forEach(token => {
-    const docCount = documents.filter(doc => doc.includes(token)).length;
+  queryTokens.forEach((token) => {
+    const docCount = documents.filter((doc) => doc.includes(token)).length;
     idfScores[token] = Math.log(corpus.length / (1 + docCount));
   });
-  
+
   // Calculate TF for the query
   const tfScores: Record<string, number> = {};
-  queryTokens.forEach(token => {
+  queryTokens.forEach((token) => {
     tfScores[token] = (tfScores[token] || 0) + 1;
   });
-  
+
   // Calculate final TF-IDF score
   let score = 0;
-  queryTokens.forEach(token => {
+  queryTokens.forEach((token) => {
     score += (tfScores[token] / queryTokens.length) * idfScores[token];
   });
-  
+
   return score;
 };
 
@@ -119,25 +167,31 @@ const CTA_PATTERNS = [
 const calculateEnhancedPlacementScore = (
   text: string,
   importantWords: string[],
-  isTitle: boolean
+  isTitle: boolean,
 ): number => {
-  const words = text.toLowerCase().split(' ');
+  const words = text.toLowerCase().split(" ");
   const checkLength = isTitle ? 3 : 150;
-  const checkText = isTitle ? words.slice(0, 3) : text.slice(0, 150).toLowerCase().split(' ');
-  
+  const checkText = isTitle
+    ? words.slice(0, 3)
+    : text.slice(0, 150).toLowerCase().split(" ");
+
   // Calculate basic placement score (70%)
-  const importantWordsInCheck = checkText.filter(word => 
-    importantWords.some(keyword => word.includes(keyword.toLowerCase()))
+  const importantWordsInCheck = checkText.filter((word) =>
+    importantWords.some((keyword) => word.includes(keyword.toLowerCase())),
   ).length;
-  const basicScore = Math.min(100, (importantWordsInCheck / Math.min(importantWords.length, checkLength)) * 100);
-  
+  const basicScore = Math.min(
+    100,
+    (importantWordsInCheck / Math.min(importantWords.length, checkLength)) *
+      100,
+  );
+
   // Calculate semantic similarity score (30%)
-  const semanticScore = Math.min(100, calculateSemanticSimilarity(
-    checkText.join(' '),
-    importantWords.join(' ')
-  ));
-  
-  return Math.min(100, Math.max(0, (0.7 * basicScore) + (0.3 * semanticScore)));
+  const semanticScore = Math.min(
+    100,
+    calculateSemanticSimilarity(checkText.join(" "), importantWords.join(" ")),
+  );
+
+  return Math.min(100, Math.max(0, 0.7 * basicScore + 0.3 * semanticScore));
 };
 
 /**
@@ -145,12 +199,12 @@ const calculateEnhancedPlacementScore = (
  */
 const calculateSemanticSimilarity = (text1: string, text2: string): number => {
   // Simple cosine similarity implementation
-  const words1 = new Set(text1.toLowerCase().split(' '));
-  const words2 = new Set(text2.toLowerCase().split(' '));
-  
-  const intersection = new Set([...words1].filter(x => words2.has(x)));
+  const words1 = new Set(text1.toLowerCase().split(" "));
+  const words2 = new Set(text2.toLowerCase().split(" "));
+
+  const intersection = new Set([...words1].filter((x) => words2.has(x)));
   const union = new Set([...words1, ...words2]);
-  
+
   return (intersection.size / union.size) * 100;
 };
 
@@ -246,33 +300,39 @@ const containsSocialMediaLinks = (text: string): boolean => {
  */
 const calculateTitleFactors = (
   userTitle: string,
-  topTitles: string[]
+  topTitles: string[],
 ): TitleFactors => {
   // Keyword Relevance Score (33.33%)
   const topKeywords = findTopKeywords(topTitles, 5);
-  const titleWords = new Set(userTitle.toLowerCase().split(' '));
-  const matchingKeywords = topKeywords.filter(keyword => titleWords.has(keyword.toLowerCase()));
+  const titleWords = new Set(userTitle.toLowerCase().split(" "));
+  const matchingKeywords = topKeywords.filter((keyword) =>
+    titleWords.has(keyword.toLowerCase()),
+  );
   const keywordRelevance = (matchingKeywords.length / 5) * 100;
-  
+
   // Enhanced Keyword Placement (33.33%)
-  const keywordPlacement = calculateEnhancedPlacementScore(userTitle, topKeywords, true);
-  
+  const keywordPlacement = calculateEnhancedPlacementScore(
+    userTitle,
+    topKeywords,
+    true,
+  );
+
   // Length Score (33.33%)
   const titleLength = userTitle.length;
   let lengthScore;
   if (titleLength < 30) {
     lengthScore = (titleLength / 30) * 100;
   } else if (titleLength > 60) {
-    lengthScore = Math.max(0, 100 - ((titleLength - 60) * 2));
+    lengthScore = Math.max(0, 100 - (titleLength - 60) * 2);
   } else if (titleLength >= 45 && titleLength <= 60) {
     lengthScore = 100;
   } else {
     lengthScore = 80 + ((titleLength - 30) / 15) * 20;
   }
-  
+
   // Calculate final title score (equal weights for all three factors)
   const score = (keywordRelevance + keywordPlacement + lengthScore) / 3;
-  
+
   return {
     keywordRelevance,
     keywordPlacement,
@@ -286,48 +346,53 @@ const calculateTitleFactors = (
  */
 const calculateDescriptionFactors = (
   userDesc: string,
-  topDescs: string[]
+  topDescs: string[],
 ): DescriptionFactors => {
   // Keyword Coverage Score (25%)
   const topKeywords = findTopKeywords(topDescs, 10); // Changed from 5 to 10
-  const descWords = new Set(userDesc.toLowerCase().split(' '));
-  const matchingKeywords = topKeywords.filter(keyword => descWords.has(keyword.toLowerCase()));
+  const descWords = new Set(userDesc.toLowerCase().split(" "));
+  const matchingKeywords = topKeywords.filter((keyword) =>
+    descWords.has(keyword.toLowerCase()),
+  );
   const keywordCoverage = (matchingKeywords.length / 10) * 100;
-  
+
   // Enhanced Keyword Placement (20%)
-  const keywordPlacement = calculateEnhancedPlacementScore(userDesc, topKeywords, false);
-  
+  const keywordPlacement = calculateEnhancedPlacementScore(
+    userDesc,
+    topKeywords,
+    false,
+  );
+
   // Length Score (20%)
-  const wordCount = userDesc.split(' ').length;
+  const wordCount = userDesc.split(" ").length;
   let lengthScore;
   if (wordCount < 100) {
     lengthScore = (wordCount / 100) * 100;
   } else if (wordCount > 200) {
-    lengthScore = Math.max(0, 100 - ((wordCount - 200) * 0.5));
+    lengthScore = Math.max(0, 100 - (wordCount - 200) * 0.5);
   } else {
     lengthScore = 100;
   }
-  
+
   // CTA Score (10%)
   const ctaScore = containsCTA(userDesc) ? 100 : 0;
-  
+
   // Social Media Score (10%)
   const socialMediaScore = containsSocialMediaLinks(userDesc) ? 100 : 0;
-  
+
   // Hashtag Score (15%)
   const hashtagCount = countHashtags(userDesc);
   const hashtagScore = Math.min(100, hashtagCount * 20);
-  
+
   // Calculate final description score with specified weights
-  const score = (
-    (keywordCoverage * 0.25) +
-    (keywordPlacement * 0.2) +
-    (lengthScore * 0.2) +
-    (ctaScore * 0.1) +
-    (socialMediaScore * 0.1) +
-    (hashtagScore * 0.15)
-  );
-  
+  const score =
+    keywordCoverage * 0.25 +
+    keywordPlacement * 0.2 +
+    lengthScore * 0.2 +
+    ctaScore * 0.1 +
+    socialMediaScore * 0.1 +
+    hashtagScore * 0.15;
+
   return {
     keywordRelevance: keywordCoverage,
     keywordCoverage,
@@ -346,9 +411,9 @@ const calculateDescriptionFactors = (
 const extractKeywords = (text: string): string[] => {
   return text
     .toLowerCase()
-    .replace(/[^\w\s]/g, '')
+    .replace(/[^\w\s]/g, "")
     .split(/\s+/)
-    .filter(word => word.length > 3 && !STOPWORDS.has(word));
+    .filter((word) => word.length > 3 && !STOPWORDS.has(word));
 };
 
 /**
@@ -357,14 +422,14 @@ const extractKeywords = (text: string): string[] => {
 const findMissingKeywords = (
   userInput: string,
   successfulVideos: string[],
-  minFrequency: number = 2
+  minFrequency: number = 2,
 ): string[] => {
   const userKeywords = new Set(extractKeywords(userInput));
   const videoKeywords = new Map<string, number>();
 
   // Count keyword frequency in successful videos
-  successfulVideos.forEach(video => {
-    extractKeywords(video).forEach(keyword => {
+  successfulVideos.forEach((video) => {
+    extractKeywords(video).forEach((keyword) => {
       if (!userKeywords.has(keyword)) {
         videoKeywords.set(keyword, (videoKeywords.get(keyword) || 0) + 1);
       }
@@ -383,9 +448,9 @@ const findMissingKeywords = (
  */
 const findTopKeywords = (texts: string[], count: number): string[] => {
   const keywordFrequency = new Map<string, number>();
-  
-  texts.forEach(text => {
-    extractKeywords(text).forEach(keyword => {
+
+  texts.forEach((text) => {
+    extractKeywords(text).forEach((keyword) => {
       keywordFrequency.set(keyword, (keywordFrequency.get(keyword) || 0) + 1);
     });
   });
@@ -401,14 +466,16 @@ const findTopKeywords = (texts: string[], count: number): string[] => {
  */
 const calculateKeywordPresenceScore = (
   text: string,
-  topKeywords: string[]
+  topKeywords: string[],
 ): { score: number; missingKeywords: string[] } => {
   const textKeywords = new Set(extractKeywords(text));
-  const missingKeywords = topKeywords.filter(keyword => !textKeywords.has(keyword));
-  
+  const missingKeywords = topKeywords.filter(
+    (keyword) => !textKeywords.has(keyword),
+  );
+
   const presentCount = topKeywords.length - missingKeywords.length;
   const score = (presentCount / topKeywords.length) * 100;
-  
+
   return { score, missingKeywords };
 };
 
@@ -419,7 +486,7 @@ const generateRecommendations = (
   titleFactors: TitleFactors,
   descFactors: DescriptionFactors,
   userInput: UserInput,
-  successfulVideos: string[]
+  successfulVideos: string[],
 ): { title: Recommendation[]; description: Recommendation[] } => {
   const recommendations = {
     title: [] as Recommendation[],
@@ -429,22 +496,29 @@ const generateRecommendations = (
   // Find top keywords for title and description
   const topTitleKeywords = findTopKeywords(
     successfulVideos.filter((_, i) => i < successfulVideos.length / 2), // Use first half for titles
-    5
+    5,
   );
   const topDescKeywords = findTopKeywords(
     successfulVideos.filter((_, i) => i >= successfulVideos.length / 2), // Use second half for descriptions
-    5
+    5,
   );
 
   // Calculate missing keywords
-  const titleKeywordScore = calculateKeywordPresenceScore(userInput.title, topTitleKeywords);
-  const descKeywordScore = calculateKeywordPresenceScore(userInput.description, topDescKeywords);
+  const titleKeywordScore = calculateKeywordPresenceScore(
+    userInput.title,
+    topTitleKeywords,
+  );
+  const descKeywordScore = calculateKeywordPresenceScore(
+    userInput.description,
+    topDescKeywords,
+  );
 
   // Title recommendations (excluding keyword recommendations)
   if (titleFactors.keywordPlacement < 70) {
     recommendations.title.push({
       priority: "medium",
-      message: "Place important keywords within the first 3 words of your title",
+      message:
+        "Place important keywords within the first 3 words of your title",
     });
   }
 
@@ -459,14 +533,16 @@ const generateRecommendations = (
   if (descFactors.keywordPlacement < 70) {
     recommendations.description.push({
       priority: "medium",
-      message: "Include key terms in the first 150 characters (visible in search previews)",
+      message:
+        "Include key terms in the first 150 characters (visible in search previews)",
     });
   }
 
   if (descFactors.ctaScore < 100) {
     recommendations.description.push({
       priority: "high",
-      message: 'Add a clear call-to-action (e.g., "Subscribe for more", "Check out related videos")',
+      message:
+        'Add a clear call-to-action (e.g., "Subscribe for more", "Check out related videos")',
     });
   }
 
@@ -480,7 +556,8 @@ const generateRecommendations = (
   if (descFactors.lengthScore < 70) {
     recommendations.description.push({
       priority: "high",
-      message: "Aim for 100-200 words in your description for better engagement",
+      message:
+        "Aim for 100-200 words in your description for better engagement",
     });
   }
 
@@ -492,7 +569,7 @@ const generateRecommendations = (
  */
 const extractHashtags = (text: string): string[] => {
   const hashtagRegex = /#\w+/g;
-  return (text.match(hashtagRegex) || []).map(tag => tag.toLowerCase());
+  return (text.match(hashtagRegex) || []).map((tag) => tag.toLowerCase());
 };
 
 /**
@@ -500,9 +577,9 @@ const extractHashtags = (text: string): string[] => {
  */
 const findTopHashtags = (texts: string[], count: number): string[] => {
   const hashtagFrequency = new Map<string, number>();
-  
-  texts.forEach(text => {
-    extractHashtags(text).forEach(hashtag => {
+
+  texts.forEach((text) => {
+    extractHashtags(text).forEach((hashtag) => {
       hashtagFrequency.set(hashtag, (hashtagFrequency.get(hashtag) || 0) + 1);
     });
   });
@@ -527,11 +604,52 @@ const calculateHashtagScore = (text: string, topHashtags: string[]): number => {
  */
 export const analyzeMetadata = (
   userInput: UserInput,
-  sampleData: SampleData
+  sampleData: SampleData,
 ): AnalysisResult => {
+  // Safety checks for null or undefined data
+  if (!sampleData) {
+    console.error("Sample data is null or undefined");
+    sampleData = {
+      titles: "Sample Video Title 1;Sample Video Title 2;Sample Video Title 3",
+      descriptions:
+        "Sample description 1. Sample description 2. Sample description 3.",
+    };
+  }
+
+  if (!sampleData.titles || !sampleData.descriptions) {
+    console.error("Sample data missing titles or descriptions");
+    sampleData = {
+      titles:
+        sampleData.titles ||
+        "Sample Video Title 1;Sample Video Title 2;Sample Video Title 3",
+      descriptions:
+        sampleData.descriptions ||
+        "Sample description 1. Sample description 2. Sample description 3.",
+    };
+  }
+
   // Parse sample data
   const titles = sampleData.titles.split(";").filter(Boolean);
   const descriptions = sampleData.descriptions.split(".").filter(Boolean);
+
+  // Add additional safety check for empty arrays
+  if (titles.length === 0 || descriptions.length === 0) {
+    console.error("Parsed titles or descriptions arrays are empty");
+    const fallbackTitles = [
+      "Sample Video Title 1",
+      "Sample Video Title 2",
+      "Sample Video Title 3",
+    ];
+    const fallbackDescriptions = [
+      "Sample description 1",
+      "Sample description 2",
+      "Sample description 3",
+    ];
+
+    if (titles.length === 0) titles.push(...fallbackTitles);
+    if (descriptions.length === 0) descriptions.push(...fallbackDescriptions);
+  }
+
   const allVideos = [...titles, ...descriptions];
 
   // Find top keywords and hashtags
@@ -541,23 +659,35 @@ export const analyzeMetadata = (
 
   // Calculate factors
   const titleFactors = calculateTitleFactors(userInput.title, titles);
-  const descFactors = calculateDescriptionFactors(userInput.description, descriptions);
+  const descFactors = calculateDescriptionFactors(
+    userInput.description,
+    descriptions,
+  );
 
   // Calculate overall score with specified weights (40% title, 60% description)
-  const overallScore = Math.min(100, Math.max(0, (titleFactors.score * 0.4) + (descFactors.score * 0.6)));
+  const overallScore = Math.min(
+    100,
+    Math.max(0, titleFactors.score * 0.4 + descFactors.score * 0.6),
+  );
 
   // Generate recommendations
   const recommendations = generateRecommendations(
     titleFactors,
     descFactors,
     userInput,
-    allVideos
+    allVideos,
   );
 
   return {
     scores: {
-      title: Math.min(100, Math.max(0, Math.round(titleFactors.score * 10) / 10)),
-      description: Math.min(100, Math.max(0, Math.round(descFactors.score * 10) / 10)),
+      title: Math.min(
+        100,
+        Math.max(0, Math.round(titleFactors.score * 10) / 10),
+      ),
+      description: Math.min(
+        100,
+        Math.max(0, Math.round(descFactors.score * 10) / 10),
+      ),
       overall: Math.min(100, Math.max(0, Math.round(overallScore * 10) / 10)),
     },
     factors: {
@@ -567,8 +697,8 @@ export const analyzeMetadata = (
     recommendations,
     topKeywords: {
       title: topTitleKeywords,
-      description: topDescKeywords
+      description: topDescKeywords,
     },
-    topHashtags
+    topHashtags,
   };
 };
