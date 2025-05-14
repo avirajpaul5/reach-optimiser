@@ -108,7 +108,7 @@ const KeywordAnalyzer: React.FC = () => {
           ? error
           : error instanceof Error
           ? error.message
-          : "An unexpected error occurred during analysis",
+          : "An unexpected error occurred during analysis"
       );
     } finally {
       clearInterval(progressInterval);
@@ -138,7 +138,7 @@ const KeywordAnalyzer: React.FC = () => {
         userInput.title,
         userInput.description,
         analysis,
-        report,
+        report
       );
       setSessionSaved(true);
     } catch (error) {
@@ -169,11 +169,11 @@ const KeywordAnalyzer: React.FC = () => {
   // Show error message if YouTube API fails
   if (ytError) {
     return (
-      <div className='w-full max-w-4xl mx-auto p-4'>
+      <div className="w-full max-w-4xl mx-auto p-4">
         <Card>
-          <CardContent className='p-6'>
-            <div className='flex items-center gap-2 text-red-600'>
-              <AlertCircle className='w-5 h-5' />
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2 text-red-600">
+              <AlertCircle className="w-5 h-5" />
               <span>
                 Failed to connect to YouTube API. Please check your API key and
                 try again.
@@ -188,17 +188,18 @@ const KeywordAnalyzer: React.FC = () => {
   // After the existing error for YouTube API
   if (error) {
     return (
-      <div className='w-full max-w-4xl mx-auto p-4'>
+      <div className="w-full max-w-4xl mx-auto p-4">
         <Card>
-          <CardContent className='p-6'>
-            <div className='flex items-start gap-3 p-4 bg-red-50 rounded-lg text-red-600'>
-              <AlertCircle className='h-5 w-5 mt-0.5 flex-shrink-0' />
+          <CardContent className="p-6">
+            <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg text-red-600">
+              <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
               <div>
-                <h3 className='font-medium'>Analysis Error</h3>
-                <p className='text-sm mt-1 text-red-500'>{error}</p>
+                <h3 className="font-medium">Analysis Error</h3>
+                <p className="text-sm mt-1 text-red-500">{error}</p>
                 <Button
                   onClick={() => setError(null)}
-                  className='mt-3 bg-red-600 hover:bg-red-700 text-white'>
+                  className="mt-3 bg-red-600 hover:bg-red-700 text-white"
+                >
                   Try Again
                 </Button>
               </div>
@@ -215,29 +216,29 @@ const KeywordAnalyzer: React.FC = () => {
 
       <HistorySidebar
         onSelectSession={handleSelectSession}
-        onSignOut={signOut}
         open={historySidebarOpen}
         setOpen={setHistorySidebarOpen}
       />
 
-      <div className='w-full max-w-4xl mx-auto p-4 space-y-4 mt-16'>
+      <div className="w-full max-w-4xl mx-auto p-4 space-y-4 mt-16">
         <Card>
           <CardHeader>
-            <CardTitle className='flex items-center justify-between'>
-              <span className='text-2xl font-bold text-orange-800 dark:text-orange-300'>
+            <CardTitle className="flex items-center justify-between">
+              <span className="text-2xl font-bold text-orange-800 dark:text-orange-300">
                 Reach Optimizer
               </span>
               {sessionSaved && (
-                <span className='text-sm font-normal text-green-600 flex items-center gap-1'>
+                <span className="text-sm font-normal text-green-600 flex items-center gap-1">
                   <svg
-                    xmlns='http://www.w3.org/2000/svg'
-                    className='h-4 w-4'
-                    viewBox='0 0 20 20'
-                    fill='currentColor'>
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
                     <path
-                      fillRule='evenodd'
-                      d='M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z'
-                      clipRule='evenodd'
+                      fillRule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clipRule="evenodd"
                     />
                   </svg>
                   Session saved
@@ -245,28 +246,28 @@ const KeywordAnalyzer: React.FC = () => {
               )}
             </CardTitle>
           </CardHeader>
-          <CardContent className='space-y-4'>
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium text-orange-900 dark:text-orange-200 text-left'>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-orange-900 dark:text-orange-200 text-left">
                 Video Title
               </label>
               <input
-                type='text'
-                className='w-full p-3 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors bg-white/70'
+                type="text"
+                className="w-full p-3 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors bg-white/70"
                 value={userInput.title}
                 onChange={(e) =>
                   setUserInput((prev) => ({ ...prev, title: e.target.value }))
                 }
-                placeholder='Enter your video title'
+                placeholder="Enter your video title"
               />
             </div>
 
-            <div className='space-y-2'>
-              <label className='block text-sm font-medium text-orange-900 dark:text-orange-200 text-left'>
+            <div className="space-y-2">
+              <label className="block text-sm font-medium text-orange-900 dark:text-orange-200 text-left">
                 Video Description
               </label>
               <textarea
-                className='w-full p-3 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors h-32 bg-white/70'
+                className="w-full p-3 border border-orange-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors h-32 bg-white/70"
                 value={userInput.description}
                 onChange={(e) =>
                   setUserInput((prev) => ({
@@ -274,11 +275,11 @@ const KeywordAnalyzer: React.FC = () => {
                     description: e.target.value,
                   }))
                 }
-                placeholder='Enter your video description'
+                placeholder="Enter your video description"
               />
             </div>
 
-            <div className='flex gap-3'>
+            <div className="flex gap-3">
               <Button
                 onClick={handleAnalyze}
                 disabled={
@@ -287,10 +288,11 @@ const KeywordAnalyzer: React.FC = () => {
                   !userInput.title.trim() ||
                   !userInput.description.trim()
                 }
-                className='flex-1 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors'>
+                className="flex-1 py-3 bg-orange-600 hover:bg-orange-700 text-white rounded-lg transition-colors"
+              >
                 {isProcessing || isLoadingYT ? (
-                  <div className='flex items-center justify-center gap-2'>
-                    <Loader className='w-4 h-4 animate-spin' />
+                  <div className="flex items-center justify-center gap-2">
+                    <Loader className="w-4 h-4 animate-spin" />
                     <span>Processing... {progress}%</span>
                   </div>
                 ) : (
@@ -302,10 +304,11 @@ const KeywordAnalyzer: React.FC = () => {
                 <Button
                   onClick={handleSaveSession}
                   disabled={isSavingSession || sessionSaved}
-                  variant='outline'
-                  className='px-4'>
+                  variant="outline"
+                  className="px-4"
+                >
                   {isSavingSession ? (
-                    <Loader className='h-4 w-4 animate-spin' />
+                    <Loader className="h-4 w-4 animate-spin" />
                   ) : sessionSaved ? (
                     "Saved"
                   ) : (
@@ -316,9 +319,9 @@ const KeywordAnalyzer: React.FC = () => {
             </div>
 
             {(isProcessing || isLoadingYT) && (
-              <div className='w-full bg-gray-200 rounded-full h-2'>
+              <div className="w-full bg-gray-200 rounded-full h-2">
                 <div
-                  className='bg-orange-600 h-2 rounded-full transition-all duration-300 ease-in-out'
+                  className="bg-orange-600 h-2 rounded-full transition-all duration-300 ease-in-out"
                   style={{ width: `${progress}%` }}
                 />
               </div>
@@ -329,40 +332,40 @@ const KeywordAnalyzer: React.FC = () => {
         {analysis && (
           <>
             {/* Score Cards */}
-            <div className='grid grid-cols-1 md:grid-cols-3 gap-6'>
-              <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center gap-2 text-orange-700'>
-                    <BarChart2 className='w-5 h-5' />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <BarChart2 className="w-5 h-5" />
                     <span>Title Score</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-4xl font-bold text-orange-600 mb-4'>
+                  <div className="text-4xl font-bold text-orange-600 mb-4">
                     {analysis.scores.title.toFixed(1)}%
                   </div>
-                  <div className='space-y-3'>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-sm text-gray-600'>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">
                         Keyword Relevance
                       </span>
-                      <span className='text-sm font-medium text-orange-600'>
+                      <span className="text-sm font-medium text-orange-600">
                         {analysis.factors.title.keywordRelevance.toFixed(1)}%
                       </span>
                     </div>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-sm text-gray-600'>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">
                         Keyword Placement
                       </span>
-                      <span className='text-sm font-medium text-orange-600'>
+                      <span className="text-sm font-medium text-orange-600">
                         {analysis.factors.title.keywordPlacement.toFixed(1)}%
                       </span>
                     </div>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-sm text-gray-600'>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">
                         Length Score
                       </span>
-                      <span className='text-sm font-medium text-orange-600'>
+                      <span className="text-sm font-medium text-orange-600">
                         {analysis.factors.title.lengthScore.toFixed(1)}%
                       </span>
                     </div>
@@ -370,59 +373,59 @@ const KeywordAnalyzer: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center gap-2 text-orange-700'>
-                    <FileText className='w-5 h-5' />
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <FileText className="w-5 h-5" />
                     <span>Description Score</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-4xl font-bold text-orange-600 mb-4'>
+                  <div className="text-4xl font-bold text-orange-600 mb-4">
                     {analysis.scores.description.toFixed(1)}%
                   </div>
-                  <div className='space-y-3'>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-sm text-gray-600'>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">
                         Keyword Coverage
                       </span>
-                      <span className='text-sm font-medium text-orange-600'>
+                      <span className="text-sm font-medium text-orange-600">
                         {analysis.factors.description.keywordCoverage.toFixed(
-                          1,
+                          1
                         )}
                         %
                       </span>
                     </div>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-sm text-gray-600'>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">
                         Keyword Placement
                       </span>
-                      <span className='text-sm font-medium text-orange-600'>
+                      <span className="text-sm font-medium text-orange-600">
                         {analysis.factors.description.keywordPlacement.toFixed(
-                          1,
+                          1
                         )}
                         %
                       </span>
                     </div>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-sm text-gray-600'>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">
                         Length Score
                       </span>
-                      <span className='text-sm font-medium text-orange-600'>
+                      <span className="text-sm font-medium text-orange-600">
                         {analysis.factors.description.lengthScore.toFixed(1)}%
                       </span>
                     </div>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-sm text-gray-600'>CTA Score</span>
-                      <span className='text-sm font-medium text-orange-600'>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">CTA Score</span>
+                      <span className="text-sm font-medium text-orange-600">
                         {analysis.factors.description.ctaScore.toFixed(1)}%
                       </span>
                     </div>
-                    <div className='flex justify-between items-center'>
-                      <span className='text-sm text-gray-600'>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-600">
                         Hashtag Score
                       </span>
-                      <span className='text-sm font-medium text-orange-600'>
+                      <span className="text-sm font-medium text-orange-600">
                         {analysis.factors.description.hashtagScore.toFixed(1)}%
                       </span>
                     </div>
@@ -430,18 +433,18 @@ const KeywordAnalyzer: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center gap-2 text-orange-700'>
-                    <Award className='w-5 h-5' />
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <Award className="w-5 h-5" />
                     <span>Overall Score</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='text-4xl font-bold text-orange-600 mb-4'>
+                  <div className="text-4xl font-bold text-orange-600 mb-4">
                     {analysis.scores.overall.toFixed(1)}%
                   </div>
-                  <div className='text-sm text-gray-600'>
+                  <div className="text-sm text-gray-600">
                     Based on weighted analysis of title and description
                   </div>
                 </CardContent>
@@ -449,20 +452,21 @@ const KeywordAnalyzer: React.FC = () => {
             </div>
 
             {/* Top Keywords Information */}
-            <div className='space-y-6'>
-              <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center gap-2 text-orange-700'>
-                    <Hash className='w-5 h-5' />
+            <div className="space-y-6">
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <Hash className="w-5 h-5" />
                     <span>Top Title Keywords</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='flex flex-wrap gap-2'>
+                  <div className="flex flex-wrap gap-2">
                     {analysis.topKeywords.title.map((keyword, index) => (
                       <span
                         key={index}
-                        className='px-4 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-medium shadow-sm hover:shadow transition-shadow'>
+                        className="px-4 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-medium shadow-sm hover:shadow transition-shadow"
+                      >
                         {keyword}
                       </span>
                     ))}
@@ -470,19 +474,20 @@ const KeywordAnalyzer: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center gap-2 text-orange-700'>
-                    <Type className='w-5 h-5' />
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <Type className="w-5 h-5" />
                     <span>Top Description Keywords</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='flex flex-wrap gap-2'>
+                  <div className="flex flex-wrap gap-2">
                     {analysis.topKeywords.description.map((keyword, index) => (
                       <span
                         key={index}
-                        className='px-4 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-medium shadow-sm hover:shadow transition-shadow'>
+                        className="px-4 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-medium shadow-sm hover:shadow transition-shadow"
+                      >
                         {keyword}
                       </span>
                     ))}
@@ -490,19 +495,20 @@ const KeywordAnalyzer: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center gap-2 text-orange-700'>
-                    <Hash className='w-5 h-5' />
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <Hash className="w-5 h-5" />
                     <span>Top Hashtags</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className='flex flex-wrap gap-2'>
+                  <div className="flex flex-wrap gap-2">
                     {analysis.topHashtags.map((hashtag, index) => (
                       <span
                         key={index}
-                        className='px-4 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-medium shadow-sm hover:shadow transition-shadow'>
+                        className="px-4 py-1.5 bg-orange-100 text-orange-800 rounded-full text-sm font-medium shadow-sm hover:shadow transition-shadow"
+                      >
                         {hashtag}
                       </span>
                     ))}
@@ -512,20 +518,21 @@ const KeywordAnalyzer: React.FC = () => {
             </div>
 
             {/* Recommendations */}
-            <div className='space-y-6'>
-              <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center gap-2 text-orange-700'>
-                    <MessageSquare className='w-5 h-5' />
+            <div className="space-y-6">
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <MessageSquare className="w-5 h-5" />
                     <span>Title Recommendations</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className='space-y-3'>
+                  <ul className="space-y-3">
                     {analysis.recommendations.title.map((rec, index) => (
                       <li
                         key={index}
-                        className='flex items-start gap-3 p-3 bg-white/80 rounded-lg shadow-sm border border-orange-100'>
+                        className="flex items-start gap-3 p-3 bg-white/80 rounded-lg shadow-sm border border-orange-100"
+                      >
                         <div
                           className={`w-2 h-2 rounded-full mt-1.5 ${
                             rec.priority === "high"
@@ -535,7 +542,7 @@ const KeywordAnalyzer: React.FC = () => {
                               : "bg-green-500"
                           }`}
                         />
-                        <span className='text-sm text-gray-700'>
+                        <span className="text-sm text-gray-700">
                           {rec.message}
                         </span>
                       </li>
@@ -544,19 +551,20 @@ const KeywordAnalyzer: React.FC = () => {
                 </CardContent>
               </Card>
 
-              <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardHeader className='pb-3'>
-                  <CardTitle className='flex items-center gap-2 text-orange-700'>
-                    <MessageSquare className='w-5 h-5' />
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardHeader className="pb-3">
+                  <CardTitle className="flex items-center gap-2 text-orange-700">
+                    <MessageSquare className="w-5 h-5" />
                     <span>Description Recommendations</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ul className='space-y-3'>
+                  <ul className="space-y-3">
                     {analysis.recommendations.description.map((rec, index) => (
                       <li
                         key={index}
-                        className='flex items-start gap-3 p-3 bg-white/80 rounded-lg shadow-sm border border-orange-100'>
+                        className="flex items-start gap-3 p-3 bg-white/80 rounded-lg shadow-sm border border-orange-100"
+                      >
                         <div
                           className={`w-2 h-2 rounded-full mt-1.5 ${
                             rec.priority === "high"
@@ -566,7 +574,7 @@ const KeywordAnalyzer: React.FC = () => {
                               : "bg-green-500"
                           }`}
                         />
-                        <span className='text-sm text-gray-700'>
+                        <span className="text-sm text-gray-700">
                           {rec.message}
                         </span>
                       </li>
@@ -578,23 +586,23 @@ const KeywordAnalyzer: React.FC = () => {
 
             {/* Improvement Report */}
             {showReport && (
-              <Card className='border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow'>
-                <CardContent className='py-6'>
+              <Card className="border-orange-100 bg-gradient-to-br from-orange-50 to-white shadow-sm hover:shadow-md transition-shadow">
+                <CardContent className="py-6">
                   {isGeneratingReport ? (
-                    <div className='flex justify-center items-center h-40'>
-                      <div className='flex flex-col items-center gap-3'>
-                        <Loader className='h-10 w-10 animate-spin text-orange-500' />
-                        <p className='text-sm text-gray-500'>
+                    <div className="flex justify-center items-center h-40">
+                      <div className="flex flex-col items-center gap-3">
+                        <Loader className="h-10 w-10 animate-spin text-orange-500" />
+                        <p className="text-sm text-gray-500">
                           Generating improvement suggestions...
                         </p>
                       </div>
                     </div>
                   ) : reportError ? (
-                    <div className='flex items-start gap-3 p-4 bg-red-50 rounded-lg text-red-600'>
-                      <AlertCircle className='h-5 w-5 mt-0.5 flex-shrink-0' />
+                    <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg text-red-600">
+                      <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                       <div>
-                        <h3 className='font-medium'>Error generating report</h3>
-                        <p className='text-sm mt-1 text-red-500'>
+                        <h3 className="font-medium">Error generating report</h3>
+                        <p className="text-sm mt-1 text-red-500">
                           {reportError}
                         </p>
                       </div>
@@ -614,19 +622,20 @@ const KeywordAnalyzer: React.FC = () => {
             )}
 
             {/* Buttons */}
-            <div className='flex gap-4'>
+            <div className="flex gap-4">
               <Button
                 onClick={handleGenerateReport}
                 disabled={isGeneratingReport}
-                className='flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 px-4 rounded-xl shadow-md hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:shadow-lg'>
+                className="flex-1 bg-gradient-to-r from-orange-500 to-orange-600 text-white py-3 px-4 rounded-xl shadow-md hover:from-orange-600 hover:to-orange-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 transition-all hover:shadow-lg"
+              >
                 {isGeneratingReport ? (
                   <>
-                    <Loader className='w-5 h-5 animate-spin' />
+                    <Loader className="w-5 h-5 animate-spin" />
                     <span>Generating Improvements...</span>
                   </>
                 ) : (
                   <>
-                    <FileText className='w-5 h-5' />
+                    <FileText className="w-5 h-5" />
                     <span>Generate Improvement Report</span>
                   </>
                 )}
@@ -636,10 +645,11 @@ const KeywordAnalyzer: React.FC = () => {
                 <Button
                   onClick={handleSaveSession}
                   disabled={isSavingSession || sessionSaved}
-                  variant='outline'
-                  className='px-4 border-gray-200 hover:border-gray-300 hover:bg-gray-50'>
+                  variant="outline"
+                  className="px-4 border-gray-200 hover:border-gray-300 hover:bg-gray-50"
+                >
                   {isSavingSession ? (
-                    <Loader className='h-4 w-4 animate-spin' />
+                    <Loader className="h-4 w-4 animate-spin" />
                   ) : sessionSaved ? (
                     "Saved"
                   ) : (
